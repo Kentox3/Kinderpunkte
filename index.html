@@ -123,12 +123,31 @@
       gap: 14px;
     }
 
-    input, select {
+    input {
       width: 100%;
       border: none;
       border-radius: 14px;
       padding: 14px;
       font-size: 1.1rem;
+    }
+
+    .checkbox-group {
+      display: grid;
+      gap: 10px;
+      background: rgba(255,255,255,0.12);
+      padding: 14px;
+      border-radius: 14px;
+    }
+
+    .checkbox-group label {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .checkbox-group input {
+      width: auto;
+      transform: scale(1.3);
+      margin-right: 10px;
     }
 
     .button-row {
@@ -175,6 +194,7 @@
   <div class="admin-box">
     <div class="admin-panel" id="pinPanel">
       <h2>Notiz öffnen</h2>
+
       <div class="admin-grid">
         <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN">
         <button class="action open" onclick="unlockAdmin()">Öffnen</button>
@@ -185,29 +205,45 @@
       <h2>Punkte ändern</h2>
 
       <div class="admin-grid">
-        <select id="childSelect">
-          <option value="Luna">Luna</option>
-          <option value="Milo">Milo</option>
-          <option value="Finn">Finn</option>
-        </select>
 
-        <input id="pointsAmount" type="number" min="1" value="1" placeholder="Punkte eingeben">
+        <div class="checkbox-group">
+          <label><input type="checkbox" name="child" value="Luna"> Luna</label>
+          <label><input type="checkbox" name="child" value="Milo"> Milo</label>
+          <label><input type="checkbox" name="child" value="Finn"> Finn</label>
+        </div>
+
+        <input
+          id="pointsAmount"
+          type="number"
+          min="1"
+          value="1"
+          placeholder="Punkte eingeben"
+        >
 
         <div class="button-row">
-          <button class="action plus" onclick="changeCustomPoints(1)">+ Punkte</button>
-          <button class="action minus" onclick="changeCustomPoints(-1)">- Punkte</button>
+          <button class="action plus" onclick="changeCustomPoints(1)">
+            + Punkte
+          </button>
+
+          <button class="action minus" onclick="changeCustomPoints(-1)">
+            - Punkte
+          </button>
         </div>
 
         <div id="adminMessage"></div>
+
       </div>
     </div>
   </div>
 
   <script>
-    const maxPoints = 100;
-    const parentPin = "1234";
 
-    const sheetApiUrl = "https://script.google.com/macros/s/AKfycbx-66Og3sGnyBvI0as18yGoz3fjFeXnvN4gE-sOC40NIWtBvQRGAvQI95eerrL64YEaBg/exec";
+    const maxPoints = 100;
+
+    const parentPin = "272520";
+
+    const sheetApiUrl =
+      "https://script.google.com/macros/s/AKfycbx-66Og3sGnyBvI0as18yGoz3fjFeXnvN4gE-sOC40NIWtBvQRGAvQI95eerrL64YEaBg/exec";
 
     const colors = {
       luna: "luna",
@@ -222,31 +258,46 @@
 
     function showPinBox() {
       pinPanel.style.display = "block";
-      pinPanel.scrollIntoView({ behavior: "smooth" });
+
+      pinPanel.scrollIntoView({
+        behavior: "smooth"
+      });
     }
 
     function unlockAdmin() {
-      const pin = document.getElementById("pinInput").value;
+
+      const pin =
+        document.getElementById("pinInput").value;
 
       if (pin === parentPin) {
+
         pinPanel.style.display = "none";
         adminPanel.style.display = "block";
+
       } else {
+
         alert("Falsche PIN");
+
       }
     }
 
     async function loadPoints() {
+
       try {
-        const response = await fetch(sheetApiUrl);
+
+        const response =
+          await fetch(sheetApiUrl);
 
         if (!response.ok) {
-          throw new Error("Fehler beim Laden");
+          throw new Error("Fehler");
         }
 
         const kids = await response.json();
+
         render(kids);
+
       } catch (error) {
+
         container.innerHTML = `
           <div class="error">
             Punkte konnten nicht geladen werden.
@@ -256,37 +307,63 @@
     }
 
     async function changeCustomPoints(direction) {
-      const name = document.getElementById("childSelect").value;
-      const amount = Math.abs(Number(document.getElementById("pointsAmount").value)) || 0;
 
-      if (amount <= 0) {
-        alert("Bitte Punkte eingeben.");
+      const selectedChildren = Array.from(
+        document.querySelectorAll(
+          'input[name="child"]:checked'
+        )
+      ).map(input => input.value);
+
+      const amount =
+        Math.abs(
+          Number(
+            document.getElementById("pointsAmount").value
+          )
+        ) || 0;
+
+      if (selectedChildren.length === 0) {
+
+        alert("Bitte mindestens ein Kind auswählen.");
         return;
+
       }
 
-      await changePoints(name, amount * direction);
-    }
+      if (amount <= 0) {
 
-    async function changePoints(name, amount) {
-      adminMessage.innerHTML = `<div class="loading">Speichere...</div>`;
+        alert("Bitte Punkte eingeben.");
+        return;
+
+      }
+
+      adminMessage.innerHTML =
+        `<div class="loading">Speichere...</div>`;
 
       try {
-        await fetch(sheetApiUrl, {
-          method: "POST",
-          body: JSON.stringify({
-            name: name,
-            change: amount
-          })
-        });
+
+        for (const name of selectedChildren) {
+
+          await fetch(sheetApiUrl, {
+            method: "POST",
+
+            body: JSON.stringify({
+              name: name,
+              change: amount * direction
+            })
+          });
+        }
 
         adminMessage.innerHTML = `
           <div class="success">
-            ${name}: ${amount > 0 ? "+" : ""}${amount} Punkte gespeichert
+            Gespeichert:
+            ${selectedChildren.join(", ")}
+            ${direction > 0 ? "+" : "-"}${amount} Punkte
           </div>
         `;
 
         await loadPoints();
+
       } catch (error) {
+
         adminMessage.innerHTML = `
           <div class="error">
             Speichern fehlgeschlagen
@@ -296,36 +373,61 @@
     }
 
     function render(kids) {
+
       container.innerHTML = "";
 
       kids.forEach(kid => {
-        const name = kid.name;
-        const points = Number(kid.points) || 0;
-        const className = colors[name.toLowerCase()] || "";
-        const percent = Math.min((points / maxPoints) * 100, 100);
 
-        const card = document.createElement("div");
-        card.className = `card ${className}`;
+        const name = kid.name;
+
+        const points =
+          Number(kid.points) || 0;
+
+        const className =
+          colors[name.toLowerCase()] || "";
+
+        const percent =
+          Math.min(
+            (points / maxPoints) * 100,
+            100
+          );
+
+        const card =
+          document.createElement("div");
+
+        card.className =
+          `card ${className}`;
 
         card.innerHTML = `
           <div class="top">
-            <div class="name">${name}</div>
-            <div class="points">${points} Punkte</div>
+            <div class="name">
+              ${name}
+            </div>
+
+            <div class="points">
+              ${points} Punkte
+            </div>
           </div>
 
           <div class="bar-bg">
-            <div class="bar" style="width:${percent}%">
+            <div
+              class="bar"
+              style="width:${percent}%"
+            >
               ${Math.round(percent)}%
             </div>
           </div>
         `;
 
         container.appendChild(card);
+
       });
     }
 
     loadPoints();
+
     setInterval(loadPoints, 10000);
+
   </script>
 
 </body>
