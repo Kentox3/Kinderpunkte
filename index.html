@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kinder Punkte Anzeige</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #182848, #4b6cb7);
+      color: white;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 2.5rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      opacity: 0.85;
+      margin-bottom: 32px;
+      font-size: 1.1rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      display: grid;
+      gap: 24px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      gap: 16px;
+    }
+
+    .name {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    .points {
+      font-size: 1.6rem;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .bar-bg {
+      width: 100%;
+      height: 32px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.4s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 12px;
+      font-weight: bold;
+    }
+
+    .luna .bar {
+      background: linear-gradient(90deg, #ff7eb3, #ff4d97);
+    }
+
+    .milo .bar {
+      background: linear-gradient(90deg, #66d9ff, #1e90ff);
+    }
+
+    .finn .bar {
+      background: linear-gradient(90deg, #8dff8d, #27c93f);
+    }
+
+    .loading,
+    .error {
+      max-width: 900px;
+      margin: 40px auto;
+      text-align: center;
+      font-size: 1.3rem;
+      background: rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 24px;
+    }
+
+    .error {
+      background: rgba(231, 76, 60, 0.25);
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 16px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .name {
+        font-size: 1.7rem;
+      }
+
+      .points {
+        font-size: 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>⭐ Kinder Punkte ⭐</h1>
+  <div class="subtitle">Live aus Google Sheets</div>
+
+  <div class="container" id="container">
+    <div class="loading">Punkte werden geladen...</div>
+  </div>
+
+  <script>
+    const maxPoints = 100;
+
+    const sheetApiUrl = "https://script.google.com/macros/s/AKfycbyg5aGdbtPEKkRDA0evoSdupgLgDkeE_yNxCMvWzTiV9h-ZjO-uwpjXowynEt4DNplQrA/exec";
+
+    const colors = {
+      luna: "luna",
+      milo: "milo",
+      finn: "finn"
+    };
+
+    const container = document.getElementById("container");
+
+    async function loadPoints() {
+      try {
+        const response = await fetch(sheetApiUrl);
+
+        if (!response.ok) {
+          throw new Error("Fehler beim Laden der Daten");
+        }
+
+        const kids = await response.json();
+        render(kids);
+      } catch (error) {
+        container.innerHTML = `
+          <div class="error">
+            Punkte konnten nicht geladen werden.<br>
+            Prüfe die Google Apps Script URL.
+          </div>
+        `;
+      }
+    }
+
+    function render(kids) {
+      container.innerHTML = "";
+
+      kids.forEach(kid => {
+        const name = kid.name;
+        const points = Number(kid.points) || 0;
+        const className = colors[name.toLowerCase()] || "";
+        const percent = Math.min((points / maxPoints) * 100, 100);
+
+        const card = document.createElement("div");
+        card.className = `card ${className}`;
+
+        card.innerHTML = `
+          <div class="top">
+            <div class="name">${name}</div>
+            <div class="points">${points} Punkte</div>
+          </div>
+
+          <div class="bar-bg">
+            <div class="bar" style="width:${percent}%">
+              ${Math.round(percent)}%
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    loadPoints();
+
+    // Aktualisiert die Anzeige automatisch alle 10 Sekunden
+    setInterval(loadPoints, 10000);
+  </script>
+
+</body>
+</html>
