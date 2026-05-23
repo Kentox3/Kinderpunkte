@@ -6,7 +6,10 @@
   <title>Kinder Punkte</title>
 
   <style>
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -14,20 +17,23 @@
       background:
         radial-gradient(circle at top left, rgba(255,255,255,0.16), transparent 35%),
         linear-gradient(135deg, #10172f, #263b7a, #6d46c9);
+
       color: white;
       min-height: 100vh;
       padding: 24px;
       overflow-x: hidden;
     }
 
-    .container, .admin-box {
+    .container,
+    .admin-box {
       max-width: 900px;
       margin: auto;
       display: grid;
       gap: 24px;
     }
 
-    .card, .admin-panel {
+    .card,
+    .admin-panel {
       background: rgba(255,255,255,0.13);
       border: 1px solid rgba(255,255,255,0.18);
       border-radius: 26px;
@@ -49,6 +55,7 @@
     }
 
     @keyframes floatSparkle {
+
       0%, 100% {
         transform: translateY(0) rotate(0deg);
         opacity: 0.25;
@@ -92,9 +99,11 @@
       border-radius: 999px;
       overflow: hidden;
       padding: 4px;
+
       box-shadow:
         inset 0 0 12px rgba(0,0,0,0.45),
         0 0 18px rgba(255,255,255,0.12);
+
       position: relative;
       z-index: 2;
     }
@@ -104,20 +113,26 @@
       min-width: 42px;
       border-radius: 999px;
       transition: width 0.7s ease;
+
       display: flex;
       align-items: center;
       justify-content: flex-end;
+
       padding-right: 12px;
       font-weight: bold;
+
       position: relative;
       overflow: hidden;
-      box-shadow: 0 0 22px rgba(255,255,255,0.35);
+
+      box-shadow:
+        0 0 22px rgba(255,255,255,0.35);
     }
 
     .bar::before {
       content: "";
       position: absolute;
       inset: 0;
+
       background:
         linear-gradient(
           120deg,
@@ -140,12 +155,22 @@
     }
 
     @keyframes shine {
-      0% { transform: translateX(-120%); }
-      55% { transform: translateX(130%); }
-      100% { transform: translateX(130%); }
+
+      0% {
+        transform: translateX(-120%);
+      }
+
+      55% {
+        transform: translateX(130%);
+      }
+
+      100% {
+        transform: translateX(130%);
+      }
     }
 
     @keyframes sparkleMove {
+
       0%, 100% {
         transform: translateY(0);
         opacity: 0.5;
@@ -158,18 +183,38 @@
     }
 
     .luna .bar {
-      background: linear-gradient(90deg, #ff7eb3, #ff4d97, #ffd1ec);
+      background:
+        linear-gradient(
+          90deg,
+          #ff7eb3,
+          #ff4d97,
+          #ffd1ec
+        );
     }
 
     .milo .bar {
-      background: linear-gradient(90deg, #5ee7ff, #1e90ff, #a9f2ff);
+      background:
+        linear-gradient(
+          90deg,
+          #5ee7ff,
+          #1e90ff,
+          #a9f2ff
+        );
     }
 
     .finn .bar {
-      background: linear-gradient(90deg, #8dff8d, #27c93f, #d6ffd6);
+      background:
+        linear-gradient(
+          90deg,
+          #8dff8d,
+          #27c93f,
+          #d6ffd6
+        );
     }
 
-    .loading, .error, .success {
+    .loading,
+    .error,
+    .success {
       text-align: center;
       font-size: 1.1rem;
       border-radius: 20px;
@@ -181,11 +226,11 @@
     }
 
     .error {
-      background: rgba(231, 76, 60, 0.25);
+      background: rgba(231,76,60,0.25);
     }
 
     .success {
-      background: rgba(46, 204, 113, 0.25);
+      background: rgba(46,204,113,0.25);
     }
 
     .secret-button {
@@ -279,6 +324,7 @@
     }
 
     @keyframes chestPulse {
+
       0%, 100% {
         transform: scale(1);
         box-shadow: 0 0 8px rgba(255,255,255,0.25);
@@ -287,6 +333,88 @@
       50% {
         transform: scale(1.12);
         box-shadow: 0 0 18px rgba(255,255,255,0.7);
+      }
+    }
+
+    .reward-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.78);
+
+      display: none;
+      align-items: center;
+      justify-content: center;
+
+      z-index: 99999;
+      flex-direction: column;
+    }
+
+    .light-beam {
+      position: absolute;
+      top: -80px;
+      width: 260px;
+      height: 520px;
+
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(255,255,255,0.55),
+          rgba(255,255,255,0.12),
+          transparent
+        );
+
+      clip-path:
+        polygon(
+          42% 0,
+          58% 0,
+          100% 100%,
+          0 100%
+        );
+
+      filter: blur(10px);
+      opacity: 0.8;
+    }
+
+    .big-star {
+      font-size: 7rem;
+      z-index: 2;
+      filter: drop-shadow(0 0 25px gold);
+      animation: starShake 0.45s infinite;
+    }
+
+    .reward-text {
+      margin-top: 24px;
+      font-size: 2.2rem;
+      font-weight: bold;
+      z-index: 2;
+      opacity: 0;
+      text-shadow: 0 0 18px rgba(255,255,255,0.9);
+    }
+
+    .reward-text.show {
+      opacity: 1;
+    }
+
+    @keyframes starShake {
+
+      0% {
+        transform: rotate(-4deg) scale(1);
+      }
+
+      25% {
+        transform: rotate(4deg) scale(1.05);
+      }
+
+      50% {
+        transform: rotate(-3deg) scale(1.1);
+      }
+
+      75% {
+        transform: rotate(3deg) scale(1.05);
+      }
+
+      100% {
+        transform: rotate(-4deg) scale(1);
       }
     }
 
@@ -299,6 +427,7 @@
     }
 
     @keyframes flyStar {
+
       0% {
         transform: translateY(0) scale(0.8) rotate(0deg);
         opacity: 1;
@@ -329,17 +458,45 @@
       .points {
         font-size: 1.35rem;
       }
+
+      .big-star {
+        font-size: 5rem;
+      }
+
+      .reward-text {
+        font-size: 1.7rem;
+      }
     }
+
   </style>
 </head>
 
 <body>
 
-  <div class="container" id="container">
-    <div class="loading">Punkte werden geladen...</div>
+  <div id="rewardOverlay" class="reward-overlay">
+
+    <div class="light-beam"></div>
+
+    <div id="bigStar" class="big-star">
+      ⭐
+    </div>
+
+    <div id="rewardText" class="reward-text"></div>
+
   </div>
 
-  <button class="secret-button" onclick="showPinBox()">📝</button>
+  <div class="container" id="container">
+    <div class="loading">
+      Punkte werden geladen...
+    </div>
+  </div>
+
+  <button
+    class="secret-button"
+    onclick="showPinBox()"
+  >
+    📝
+  </button>
 
   <div class="admin-box">
 
@@ -491,6 +648,22 @@
 
     async function claimChest(name) {
 
+      const overlay =
+        document.getElementById("rewardOverlay");
+
+      const bigStar =
+        document.getElementById("bigStar");
+
+      const rewardText =
+        document.getElementById("rewardText");
+
+      overlay.style.display = "flex";
+
+      rewardText.classList.remove("show");
+      rewardText.textContent = "";
+
+      bigStar.textContent = "⭐";
+
       try {
 
         const response = await fetch(
@@ -507,7 +680,14 @@
 
         const result = await response.json();
 
-        if (result.success) {
+        setTimeout(async () => {
+
+          bigStar.textContent = "🌟";
+
+          rewardText.textContent =
+            `+${result.claimed} Punkte!`;
+
+          rewardText.classList.add("show");
 
           createStarBurst(
             window.innerWidth / 2,
@@ -516,12 +696,19 @@
 
           await loadPoints();
 
-        }
+          setTimeout(() => {
+            overlay.style.display = "none";
+          }, 1800);
+
+        }, 3000);
 
       } catch (error) {
 
-        alert("Truhe konnte nicht geöffnet werden.");
+        overlay.style.display = "none";
 
+        alert(
+          "Stern konnte nicht geöffnet werden."
+        );
       }
     }
 
@@ -542,16 +729,18 @@
 
       if (selectedChildren.length === 0) {
 
-        alert("Bitte mindestens ein Kind auswählen.");
-        return;
+        alert(
+          "Bitte mindestens ein Kind auswählen."
+        );
 
+        return;
       }
 
       if (amount <= 0) {
 
         alert("Bitte Punkte eingeben.");
-        return;
 
+        return;
       }
 
       adminMessage.innerHTML =
@@ -639,7 +828,7 @@
                     class="chest-button"
                     onclick="claimChest('${name}')"
                   >
-                    🧰
+                    ⭐
                   </button>
                 `
                 : ""
