@@ -6,13 +6,7 @@
   <title>Kinder Punkte</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      min-height: 100%;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -24,7 +18,6 @@
       min-height: 100vh;
       padding: 24px;
       overflow-x: hidden;
-      position: relative;
     }
 
     h1 {
@@ -32,8 +25,6 @@
       font-size: 2.6rem;
       margin-bottom: 12px;
       text-shadow: 0 0 18px rgba(255,255,255,0.45);
-      position: relative;
-      z-index: 10;
     }
 
     .subtitle {
@@ -41,22 +32,16 @@
       opacity: 0.9;
       margin-bottom: 32px;
       font-size: 1.1rem;
-      position: relative;
-      z-index: 10;
     }
 
-    .container,
-    .admin-box {
+    .container, .admin-box {
       max-width: 900px;
       margin: auto;
       display: grid;
       gap: 24px;
-      position: relative;
-      z-index: 10;
     }
 
-    .card,
-    .admin-panel {
+    .card, .admin-panel {
       background: rgba(255,255,255,0.13);
       border: 1px solid rgba(255,255,255,0.18);
       border-radius: 26px;
@@ -64,15 +49,22 @@
       backdrop-filter: blur(12px);
       box-shadow: 0 14px 40px rgba(0,0,0,0.28);
       position: relative;
-      isolation: isolate;
       overflow: hidden;
-      z-index: 10;
     }
 
-    .admin-panel {
-      display: none;
-      margin-top: 20px;
-      z-index: 20;
+    .card::before {
+      content: "✨";
+      position: absolute;
+      right: 22px;
+      top: 14px;
+      opacity: 0.35;
+      font-size: 1.4rem;
+      animation: floatSparkle 2.8s ease-in-out infinite;
+    }
+
+    @keyframes floatSparkle {
+      0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.25; }
+      50% { transform: translateY(-8px) rotate(15deg); opacity: 0.75; }
     }
 
     .top {
@@ -82,7 +74,7 @@
       margin-bottom: 18px;
       gap: 16px;
       position: relative;
-      z-index: 4;
+      z-index: 2;
     }
 
     .name {
@@ -109,149 +101,74 @@
         0 0 18px rgba(255,255,255,0.12);
       position: relative;
       z-index: 2;
-      isolation: isolate;
     }
 
     .bar {
       height: 100%;
-      min-width: 14px;
+      min-width: 42px;
       border-radius: 999px;
       transition: width 0.7s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 12px;
+      font-weight: bold;
       position: relative;
       overflow: hidden;
-      isolation: isolate;
-      z-index: 1;
-      box-shadow: inset 0 0 12px rgba(255,255,255,0.25);
+      box-shadow: 0 0 22px rgba(255,255,255,0.35);
     }
 
     .bar::before {
       content: "";
       position: absolute;
       inset: 0;
-      border-radius: 999px;
       background:
         linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.65) 35%, transparent 70%);
       transform: translateX(-100%);
       animation: shine 2.2s infinite;
-      z-index: 2;
-      pointer-events: none;
+    }
+
+    .bar::after {
+      content: "✦ ✨ ✦";
+      position: absolute;
+      left: 12px;
+      font-size: 0.9rem;
+      opacity: 0.75;
+      animation: sparkleMove 1.8s ease-in-out infinite;
     }
 
     @keyframes shine {
-      0% {
-        transform: translateX(-120%);
-      }
-
-      55% {
-        transform: translateX(130%);
-      }
-
-      100% {
-        transform: translateX(130%);
-      }
+      0% { transform: translateX(-120%); }
+      55% { transform: translateX(130%); }
+      100% { transform: translateX(130%); }
     }
 
-    .luna .bar {
-      background: linear-gradient(90deg, #ff7eb3, #ff4d97, #ffd1ec);
-      color: #ff7eb3;
+    @keyframes sparkleMove {
+      0%, 100% { transform: translateY(0); opacity: 0.5; }
+      50% { transform: translateY(-2px); opacity: 1; }
     }
 
-    .milo .bar {
-      background: linear-gradient(90deg, #5ee7ff, #1e90ff, #a9f2ff);
-      color: #5ee7ff;
-    }
-
-    .finn .bar {
-      background: linear-gradient(90deg, #8dff8d, #27c93f, #d6ffd6);
-      color: #8dff8d;
-    }
-
-    .spark-emitter {
-      position: absolute;
-      right: 2px;
-      top: 50%;
-      width: 10px;
-      height: 10px;
-      transform: translateY(-50%);
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    .spark-emitter span {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: currentColor;
-      box-shadow:
-        0 0 8px currentColor,
-        0 0 16px currentColor;
-      opacity: 0;
-      animation: sparkJump 700ms infinite ease-out;
-    }
-
-    .spark-emitter span:nth-child(1)  { animation-delay: 0ms;   --x: 7px;  --y: -7px; }
-    .spark-emitter span:nth-child(2)  { animation-delay: 60ms;  --x: 10px; --y: -3px; }
-    .spark-emitter span:nth-child(3)  { animation-delay: 120ms; --x: 8px;  --y: 6px; }
-    .spark-emitter span:nth-child(4)  { animation-delay: 180ms; --x: 2px;  --y: -9px; }
-    .spark-emitter span:nth-child(5)  { animation-delay: 240ms; --x: 11px; --y: 8px; }
-    .spark-emitter span:nth-child(6)  { animation-delay: 300ms; --x: 4px;  --y: 9px; }
-    .spark-emitter span:nth-child(7)  { animation-delay: 360ms; --x: 12px; --y: 1px; }
-    .spark-emitter span:nth-child(8)  { animation-delay: 420ms; --x: 2px;  --y: 7px; }
-    .spark-emitter span:nth-child(9)  { animation-delay: 480ms; --x: 9px;  --y: -10px; }
-    .spark-emitter span:nth-child(10) { animation-delay: 540ms; --x: 12px; --y: -5px; }
-    .spark-emitter span:nth-child(11) { animation-delay: 600ms; --x: 7px;  --y: -1px; }
-    .spark-emitter span:nth-child(12) { animation-delay: 660ms; --x: 10px; --y: 4px; }
-
-    @keyframes sparkJump {
-      0% {
-        transform: translate(0, 0) scale(0.3);
-        opacity: 0;
-      }
-
-      18% {
-        opacity: 1;
-      }
-
-      100% {
-        transform: translate(var(--x), var(--y)) scale(0);
-        opacity: 0;
-      }
-    }
+    .luna .bar { background: linear-gradient(90deg, #ff7eb3, #ff4d97, #ffd1ec); }
+    .milo .bar { background: linear-gradient(90deg, #5ee7ff, #1e90ff, #a9f2ff); }
+    .finn .bar { background: linear-gradient(90deg, #8dff8d, #27c93f, #d6ffd6); }
 
     .level-text {
       margin-top: 10px;
       text-align: right;
       opacity: 0.85;
       font-weight: bold;
-      position: relative;
-      z-index: 4;
     }
 
-    .loading,
-    .error,
-    .success {
+    .loading, .error, .success {
       text-align: center;
       font-size: 1.1rem;
       border-radius: 20px;
       padding: 18px;
-      position: relative;
-      z-index: 10;
     }
 
-    .loading {
-      background: rgba(255,255,255,0.12);
-    }
-
-    .error {
-      background: rgba(231, 76, 60, 0.25);
-    }
-
-    .success {
-      background: rgba(46, 204, 113, 0.25);
-    }
+    .loading { background: rgba(255,255,255,0.12); }
+    .error { background: rgba(231, 76, 60, 0.25); }
+    .success { background: rgba(46, 204, 113, 0.25); }
 
     .secret-button {
       display: block;
@@ -261,8 +178,11 @@
       font-size: 1.6rem;
       cursor: pointer;
       opacity: 0.45;
-      position: relative;
-      z-index: 15;
+    }
+
+    .admin-panel {
+      display: none;
+      margin-top: 20px;
     }
 
     .admin-panel h2 {
@@ -281,8 +201,6 @@
       border-radius: 14px;
       padding: 14px;
       font-size: 1.1rem;
-      position: relative;
-      z-index: 21;
     }
 
     .checkbox-group {
@@ -291,15 +209,11 @@
       background: rgba(255,255,255,0.12);
       padding: 14px;
       border-radius: 14px;
-      position: relative;
-      z-index: 21;
     }
 
     .checkbox-group label {
       font-size: 1.2rem;
       font-weight: bold;
-      position: relative;
-      z-index: 21;
     }
 
     .checkbox-group input {
@@ -312,8 +226,6 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      position: relative;
-      z-index: 21;
     }
 
     button.action {
@@ -324,66 +236,31 @@
       font-weight: bold;
       cursor: pointer;
       color: white;
-      position: relative;
-      z-index: 21;
     }
 
-    .plus {
-      background: #2ecc71;
-    }
-
-    .minus {
-      background: #e74c3c;
-    }
-
-    .open {
-      background: #3498db;
-    }
+    .plus { background: #2ecc71; }
+    .minus { background: #e74c3c; }
+    .open { background: #3498db; }
 
     .click-star {
       position: fixed;
       pointer-events: none;
       font-size: 24px;
-      line-height: 1;
-      z-index: 2147483647;
+      z-index: 9999;
       animation: flyStar 900ms ease-out forwards;
-      will-change: transform, opacity;
     }
 
     @keyframes flyStar {
-      0% {
-        transform: translate(-50%, -50%) translateY(0) scale(0.8) rotate(0deg);
-        opacity: 1;
-      }
-
-      100% {
-        transform: translate(-50%, -50%) translateY(-70px) scale(1.6) rotate(35deg);
-        opacity: 0;
-      }
+      0% { transform: translateY(0) scale(0.8) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-70px) scale(1.6) rotate(35deg); opacity: 0; }
     }
 
     @media (max-width: 600px) {
-      body {
-        padding: 16px;
-      }
-
-      h1 {
-        font-size: 2rem;
-      }
-
-      .top {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-
-      .name {
-        font-size: 1.7rem;
-      }
-
-      .points {
-        font-size: 1.35rem;
-      }
+      body { padding: 16px; }
+      h1 { font-size: 2rem; }
+      .top { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .name { font-size: 1.7rem; }
+      .points { font-size: 1.35rem; }
     }
   </style>
 </head>
@@ -543,10 +420,9 @@
         const name = kid.name;
         const points = Number(kid.points) || 0;
         const className = colors[name.toLowerCase()] || "";
-
+        const percent = Math.min((points / maxPoints) * 100, 100);
         const level = Math.floor(points / maxPoints) + 1;
         const currentLevelPoints = points % maxPoints;
-        const percent = Math.min((currentLevelPoints / maxPoints) * 100, 100);
 
         const card = document.createElement("div");
         card.className = `card ${className}`;
@@ -559,11 +435,7 @@
 
           <div class="bar-bg">
             <div class="bar" style="width:${percent}%">
-              <div class="spark-emitter">
-                <span></span><span></span><span></span><span></span>
-                <span></span><span></span><span></span><span></span>
-                <span></span><span></span><span></span><span></span>
-              </div>
+              ${Math.round(percent)}%
             </div>
           </div>
 
@@ -599,14 +471,6 @@
     }
 
     document.addEventListener("click", function(e) {
-      if (
-        e.target.closest("button") ||
-        e.target.closest("input") ||
-        e.target.closest("label")
-      ) {
-        return;
-      }
-
       createStar(e.clientX, e.clientY);
     });
 
