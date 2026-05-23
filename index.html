@@ -49,6 +49,7 @@
       backdrop-filter: blur(12px);
       box-shadow: 0 14px 40px rgba(0,0,0,0.28);
       position: relative;
+      isolation: isolate;
       overflow: hidden;
     }
 
@@ -79,13 +80,13 @@
       height: 36px;
       background: rgba(0,0,0,0.28);
       border-radius: 999px;
-      overflow: visible;
+      overflow: hidden;
       padding: 4px;
       box-shadow:
         inset 0 0 12px rgba(0,0,0,0.45),
         0 0 18px rgba(255,255,255,0.12);
       position: relative;
-      z-index: 2;
+      z-index: 1;
     }
 
     .bar {
@@ -94,8 +95,8 @@
       border-radius: 999px;
       transition: width 0.7s ease;
       position: relative;
-      overflow: visible;
-      box-shadow: 0 0 22px currentColor;
+      overflow: hidden;
+      box-shadow: inset 0 0 12px rgba(255,255,255,0.25);
     }
 
     .bar::before {
@@ -107,6 +108,7 @@
         linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.65) 35%, transparent 70%);
       transform: translateX(-100%);
       animation: shine 2.2s infinite;
+      z-index: 1;
     }
 
     @keyframes shine {
@@ -132,13 +134,13 @@
 
     .spark-emitter {
       position: absolute;
-      right: -4px;
+      right: 2px;
       top: 50%;
       width: 10px;
       height: 10px;
       transform: translateY(-50%);
       pointer-events: none;
-      z-index: 50;
+      z-index: 2;
     }
 
     .spark-emitter span {
@@ -151,24 +153,23 @@
       background: currentColor;
       box-shadow:
         0 0 8px currentColor,
-        0 0 16px currentColor,
-        0 0 24px currentColor;
+        0 0 16px currentColor;
       opacity: 0;
       animation: sparkJump 700ms infinite ease-out;
     }
 
-    .spark-emitter span:nth-child(1) { animation-delay: 0ms;   --x: 9px;  --y: -12px; }
-    .spark-emitter span:nth-child(2) { animation-delay: 60ms;  --x: 15px; --y: -5px; }
-    .spark-emitter span:nth-child(3) { animation-delay: 120ms; --x: 12px; --y: 9px; }
-    .spark-emitter span:nth-child(4) { animation-delay: 180ms; --x: 4px;  --y: -16px; }
-    .spark-emitter span:nth-child(5) { animation-delay: 240ms; --x: 18px; --y: 13px; }
-    .spark-emitter span:nth-child(6) { animation-delay: 300ms; --x: 7px;  --y: 17px; }
-    .spark-emitter span:nth-child(7) { animation-delay: 360ms; --x: 20px; --y: 1px; }
-    .spark-emitter span:nth-child(8) { animation-delay: 420ms; --x: 3px;  --y: 11px; }
-    .spark-emitter span:nth-child(9) { animation-delay: 480ms; --x: 14px; --y: -18px; }
-    .spark-emitter span:nth-child(10){ animation-delay: 540ms; --x: 22px; --y: -8px; }
-    .spark-emitter span:nth-child(11){ animation-delay: 600ms; --x: 11px; --y: -2px; }
-    .spark-emitter span:nth-child(12){ animation-delay: 660ms; --x: 17px; --y: 5px; }
+    .spark-emitter span:nth-child(1) { animation-delay: 0ms;   --x: 7px;  --y: -7px; }
+    .spark-emitter span:nth-child(2) { animation-delay: 60ms;  --x: 10px; --y: -3px; }
+    .spark-emitter span:nth-child(3) { animation-delay: 120ms; --x: 8px;  --y: 6px; }
+    .spark-emitter span:nth-child(4) { animation-delay: 180ms; --x: 2px;  --y: -9px; }
+    .spark-emitter span:nth-child(5) { animation-delay: 240ms; --x: 11px; --y: 8px; }
+    .spark-emitter span:nth-child(6) { animation-delay: 300ms; --x: 4px;  --y: 9px; }
+    .spark-emitter span:nth-child(7) { animation-delay: 360ms; --x: 12px; --y: 1px; }
+    .spark-emitter span:nth-child(8) { animation-delay: 420ms; --x: 2px;  --y: 7px; }
+    .spark-emitter span:nth-child(9) { animation-delay: 480ms; --x: 9px;  --y: -10px; }
+    .spark-emitter span:nth-child(10){ animation-delay: 540ms; --x: 12px; --y: -5px; }
+    .spark-emitter span:nth-child(11){ animation-delay: 600ms; --x: 7px;  --y: -1px; }
+    .spark-emitter span:nth-child(12){ animation-delay: 660ms; --x: 10px; --y: 4px; }
 
     @keyframes sparkJump {
       0% {
@@ -191,6 +192,8 @@
       text-align: right;
       opacity: 0.85;
       font-weight: bold;
+      position: relative;
+      z-index: 2;
     }
 
     .loading, .error, .success {
