@@ -28,18 +28,18 @@
     .subtitle {
       text-align: center;
       opacity: 0.85;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
       font-size: 1.1rem;
     }
 
-    .container {
+    .container, .admin-box {
       max-width: 900px;
       margin: auto;
       display: grid;
       gap: 24px;
     }
 
-    .card {
+    .card, .admin-panel {
       background: rgba(255,255,255,0.12);
       border-radius: 24px;
       padding: 24px;
@@ -97,19 +97,90 @@
       background: linear-gradient(90deg, #8dff8d, #27c93f);
     }
 
-    .loading,
-    .error {
+    .loading, .error, .success {
       max-width: 900px;
-      margin: 40px auto;
+      margin: 20px auto;
       text-align: center;
-      font-size: 1.3rem;
-      background: rgba(255,255,255,0.12);
+      font-size: 1.1rem;
       border-radius: 20px;
-      padding: 24px;
+      padding: 18px;
+    }
+
+    .loading {
+      background: rgba(255,255,255,0.12);
     }
 
     .error {
       background: rgba(231, 76, 60, 0.25);
+    }
+
+    .success {
+      background: rgba(46, 204, 113, 0.25);
+    }
+
+    .admin-toggle {
+      display: block;
+      margin: 0 auto 24px auto;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      background: rgba(255,255,255,0.9);
+      color: #182848;
+    }
+
+    .admin-panel {
+      margin-bottom: 28px;
+      display: none;
+    }
+
+    .admin-panel h2 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .admin-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr;
+    }
+
+    input, select {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 1.1rem;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    button.action {
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      color: white;
+    }
+
+    .plus1 {
+      background: #2ecc71;
+    }
+
+    .plus5 {
+      background: #3498db;
+    }
+
+    .minus1 {
+      background: #e74c3c;
     }
 
     @media (max-width: 600px) {
@@ -134,6 +205,10 @@
       .points {
         font-size: 1.35rem;
       }
+
+      .button-row {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -142,12 +217,44 @@
   <h1>⭐ Kinder Punkte ⭐</h1>
   <div class="subtitle">Live aus Google Sheets</div>
 
+  <button class="admin-toggle" onclick="showPinBox()">Elternbereich</button>
+
+  <div class="admin-box">
+    <div class="admin-panel" id="pinPanel">
+      <h2>Eltern-PIN</h2>
+      <div class="admin-grid">
+        <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN eingeben">
+        <button class="action plus5" onclick="unlockAdmin()">Öffnen</button>
+      </div>
+    </div>
+
+    <div class="admin-panel" id="adminPanel">
+      <h2>Punkte vergeben</h2>
+      <div class="admin-grid">
+        <select id="childSelect">
+          <option value="Luna">Luna</option>
+          <option value="Milo">Milo</option>
+          <option value="Finn">Finn</option>
+        </select>
+
+        <div class="button-row">
+          <button class="action plus1" onclick="changePoints(1)">+1 Punkt</button>
+          <button class="action plus5" onclick="changePoints(5)">+5 Punkte</button>
+          <button class="action minus1" onclick="changePoints(-1)">-1 Punkt</button>
+        </div>
+
+        <div id="adminMessage"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="container" id="container">
     <div class="loading">Punkte werden geladen...</div>
   </div>
 
   <script>
     const maxPoints = 100;
+    const parentPin = "1234";
 
     const sheetApiUrl = "https://script.google.com/macros/s/AKfycbyg5aGdbtPEKkRDA0evoSdupgLgDkeE_yNxCMvWzTiV9h-ZjO-uwpjXowynEt4DNplQrA/exec";
 
@@ -158,6 +265,24 @@
     };
 
     const container = document.getElementById("container");
+    const pinPanel = document.getElementById("pinPanel");
+    const adminPanel = document.getElementById("adminPanel");
+    const adminMessage = document.getElementById("adminMessage");
+
+    function showPinBox() {
+      pinPanel.style.display = "block";
+    }
+
+    function unlockAdmin() {
+      const pin = document.getElementById("pinInput").value;
+
+      if (pin === parentPin) {
+        pinPanel.style.display = "none";
+        adminPanel.style.display = "block";
+      } else {
+        alert("Falsche PIN");
+      }
+    }
 
     async function loadPoints() {
       try {
@@ -176,6 +301,26 @@
             Prüfe die Google Apps Script URL.
           </div>
         `;
+      }
+    }
+
+    async function changePoints(amount) {
+      const name = document.getElementById("childSelect").value;
+      adminMessage.innerHTML = `<div class="loading">Speichere...</div>`;
+
+      try {
+        await fetch(sheetApiUrl, {
+          method: "POST",
+          body: JSON.stringify({
+            name: name,
+            change: amount
+          })
+        });
+
+        adminMessage.innerHTML = `<div class="success">${name}: ${amount > 0 ? "+" : ""}${amount} Punkt(e) gespeichert</div>`;
+        await loadPoints();
+      } catch (error) {
+        adminMessage.innerHTML = `<div class="error">Speichern fehlgeschlagen</div>`;
       }
     }
 
@@ -209,8 +354,6 @@
     }
 
     loadPoints();
-
-    // Aktualisiert die Anzeige automatisch alle 10 Sekunden
     setInterval(loadPoints, 10000);
   </script>
 
