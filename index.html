@@ -6,14 +6,19 @@
   <title>Kinder Punkte</title>
 
   <style>
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
       font-family: Arial, sans-serif;
+
       background:
         radial-gradient(circle at top left, rgba(255,255,255,0.16), transparent 35%),
         linear-gradient(135deg, #10172f, #263b7a, #6d46c9);
+
       color: white;
       min-height: 100vh;
       padding: 24px;
@@ -34,8 +39,12 @@
       border: 1px solid rgba(255,255,255,0.18);
       border-radius: 26px;
       padding: 24px;
+
       backdrop-filter: blur(12px);
-      box-shadow: 0 14px 40px rgba(0,0,0,0.28);
+
+      box-shadow:
+        0 14px 40px rgba(0,0,0,0.28);
+
       position: relative;
       overflow: hidden;
     }
@@ -51,8 +60,16 @@
     }
 
     @keyframes floatSparkle {
-      0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.25; }
-      50% { transform: translateY(-8px) rotate(15deg); opacity: 0.75; }
+
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.25;
+      }
+
+      50% {
+        transform: translateY(-8px) rotate(15deg);
+        opacity: 0.75;
+      }
     }
 
     .top {
@@ -68,6 +85,7 @@
     .name {
       font-size: 2rem;
       font-weight: bold;
+
       display: flex;
       align-items: center;
       gap: 10px;
@@ -77,19 +95,25 @@
       font-size: 1.6rem;
       font-weight: bold;
       white-space: nowrap;
-      text-shadow: 0 0 12px rgba(255,255,255,0.35);
+
+      text-shadow:
+        0 0 12px rgba(255,255,255,0.35);
     }
 
     .bar-bg {
       width: 100%;
       height: 36px;
+
       background: rgba(0,0,0,0.28);
+
       border-radius: 999px;
       overflow: hidden;
       padding: 4px;
+
       box-shadow:
         inset 0 0 12px rgba(0,0,0,0.45),
         0 0 18px rgba(255,255,255,0.12);
+
       position: relative;
       z-index: 2;
     }
@@ -97,22 +121,30 @@
     .bar {
       height: 100%;
       min-width: 42px;
+
       border-radius: 999px;
+
       transition: width 0.7s ease;
+
       display: flex;
       align-items: center;
       justify-content: flex-end;
+
       padding-right: 12px;
       font-weight: bold;
+
       position: relative;
       overflow: hidden;
-      box-shadow: 0 0 22px rgba(255,255,255,0.35);
+
+      box-shadow:
+        0 0 22px rgba(255,255,255,0.35);
     }
 
     .bar::before {
       content: "";
       position: absolute;
       inset: 0;
+
       background:
         linear-gradient(
           120deg,
@@ -120,6 +152,7 @@
           rgba(255,255,255,0.65) 35%,
           transparent 70%
         );
+
       transform: translateX(-100%);
       animation: shine 2.2s infinite;
     }
@@ -134,26 +167,61 @@
     }
 
     @keyframes shine {
-      0% { transform: translateX(-120%); }
-      55% { transform: translateX(130%); }
-      100% { transform: translateX(130%); }
+
+      0% {
+        transform: translateX(-120%);
+      }
+
+      55% {
+        transform: translateX(130%);
+      }
+
+      100% {
+        transform: translateX(130%);
+      }
     }
 
     @keyframes sparkleMove {
-      0%, 100% { transform: translateY(0); opacity: 0.5; }
-      50% { transform: translateY(-2px); opacity: 1; }
+
+      0%, 100% {
+        transform: translateY(0);
+        opacity: 0.5;
+      }
+
+      50% {
+        transform: translateY(-2px);
+        opacity: 1;
+      }
     }
 
     .luna .bar {
-      background: linear-gradient(90deg, #ff7eb3, #ff4d97, #ffd1ec);
+      background:
+        linear-gradient(
+          90deg,
+          #ff7eb3,
+          #ff4d97,
+          #ffd1ec
+        );
     }
 
     .milo .bar {
-      background: linear-gradient(90deg, #5ee7ff, #1e90ff, #a9f2ff);
+      background:
+        linear-gradient(
+          90deg,
+          #5ee7ff,
+          #1e90ff,
+          #a9f2ff
+        );
     }
 
     .finn .bar {
-      background: linear-gradient(90deg, #8dff8d, #27c93f, #d6ffd6);
+      background:
+        linear-gradient(
+          90deg,
+          #8dff8d,
+          #27c93f,
+          #d6ffd6
+        );
     }
 
     .loading,
@@ -165,9 +233,17 @@
       padding: 18px;
     }
 
-    .loading { background: rgba(255,255,255,0.12); }
-    .error { background: rgba(231,76,60,0.25); }
-    .success { background: rgba(46,204,113,0.25); }
+    .loading {
+      background: rgba(255,255,255,0.12);
+    }
+
+    .error {
+      background: rgba(231,76,60,0.25);
+    }
+
+    .success {
+      background: rgba(46,204,113,0.25);
+    }
 
     .secret-button {
       display: block;
@@ -205,7 +281,9 @@
     .checkbox-group {
       display: grid;
       gap: 10px;
+
       background: rgba(255,255,255,0.12);
+
       padding: 14px;
       border-radius: 14px;
     }
@@ -230,55 +308,86 @@
     button.action {
       border: none;
       border-radius: 14px;
+
       padding: 14px;
+
       font-size: 1.1rem;
       font-weight: bold;
+
       cursor: pointer;
       color: white;
     }
 
-    .plus { background: #2ecc71; }
-    .minus { background: #e74c3c; }
-    .open { background: #3498db; }
+    .plus {
+      background: #2ecc71;
+    }
+
+    .minus {
+      background: #e74c3c;
+    }
+
+    .open {
+      background: #3498db;
+    }
 
     .chest-button {
       border: none;
-      background: rgba(255,255,255,0.16);
+
+      background:
+        rgba(255,255,255,0.16);
+
       border-radius: 12px;
+
       padding: 6px 10px;
+
       font-size: 1.1rem;
+
       cursor: pointer;
-      animation: chestPulse 1.2s infinite;
+
+      animation:
+        chestPulse 1.2s infinite;
     }
 
     @keyframes chestPulse {
+
       0%, 100% {
         transform: scale(1);
-        box-shadow: 0 0 8px rgba(255,255,255,0.25);
+
+        box-shadow:
+          0 0 8px rgba(255,255,255,0.25);
       }
 
       50% {
         transform: scale(1.12);
-        box-shadow: 0 0 18px rgba(255,255,255,0.7);
+
+        box-shadow:
+          0 0 18px rgba(255,255,255,0.7);
       }
     }
 
     .reward-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.78);
+
+      background:
+        rgba(0,0,0,0.78);
+
       display: none;
       align-items: center;
       justify-content: center;
+
       z-index: 99999;
+
       flex-direction: column;
     }
 
     .light-beam {
       position: absolute;
       top: -80px;
+
       width: 260px;
       height: 520px;
+
       background:
         linear-gradient(
           to bottom,
@@ -286,7 +395,15 @@
           rgba(255,255,255,0.12),
           transparent
         );
-      clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+
+      clip-path:
+        polygon(
+          42% 0,
+          58% 0,
+          100% 100%,
+          0 100%
+        );
+
       filter: blur(10px);
       opacity: 0.8;
     }
@@ -294,17 +411,26 @@
     .big-star {
       font-size: 7rem;
       z-index: 2;
-      filter: drop-shadow(0 0 25px gold);
-      animation: starShake 0.45s infinite;
+
+      filter:
+        drop-shadow(0 0 25px gold);
+
+      animation:
+        starShake 0.45s infinite;
     }
 
     .reward-text {
       margin-top: 24px;
+
       font-size: 2.2rem;
       font-weight: bold;
+
       z-index: 2;
+
       opacity: 0;
-      text-shadow: 0 0 18px rgba(255,255,255,0.9);
+
+      text-shadow:
+        0 0 18px rgba(255,255,255,0.9);
     }
 
     .reward-text.show {
@@ -312,11 +438,26 @@
     }
 
     @keyframes starShake {
-      0% { transform: rotate(-4deg) scale(1); }
-      25% { transform: rotate(4deg) scale(1.05); }
-      50% { transform: rotate(-3deg) scale(1.1); }
-      75% { transform: rotate(3deg) scale(1.05); }
-      100% { transform: rotate(-4deg) scale(1); }
+
+      0% {
+        transform: rotate(-4deg) scale(1);
+      }
+
+      25% {
+        transform: rotate(4deg) scale(1.05);
+      }
+
+      50% {
+        transform: rotate(-3deg) scale(1.1);
+      }
+
+      75% {
+        transform: rotate(3deg) scale(1.05);
+      }
+
+      100% {
+        transform: rotate(-4deg) scale(1);
+      }
     }
 
     .click-star {
@@ -324,23 +465,37 @@
       pointer-events: none;
       font-size: 24px;
       z-index: 9999;
-      animation: flyStar 900ms ease-out forwards;
+
+      animation:
+        flyStar 900ms ease-out forwards;
     }
 
     @keyframes flyStar {
+
       0% {
-        transform: translateY(0) scale(0.8) rotate(0deg);
+        transform:
+          translateY(0)
+          scale(0.8)
+          rotate(0deg);
+
         opacity: 1;
       }
 
       100% {
-        transform: translateY(-70px) scale(1.6) rotate(35deg);
+        transform:
+          translateY(-70px)
+          scale(1.6)
+          rotate(35deg);
+
         opacity: 0;
       }
     }
 
     @media (max-width: 600px) {
-      body { padding: 16px; }
+
+      body {
+        padding: 16px;
+      }
 
       .top {
         flex-direction: column;
@@ -348,40 +503,109 @@
         gap: 8px;
       }
 
-      .name { font-size: 1.7rem; }
-      .points { font-size: 1.35rem; }
-      .big-star { font-size: 5rem; }
-      .reward-text { font-size: 1.7rem; }
+      .name {
+        font-size: 1.7rem;
+      }
+
+      .points {
+        font-size: 1.35rem;
+      }
+
+      .big-star {
+        font-size: 5rem;
+      }
+
+      .reward-text {
+        font-size: 1.7rem;
+      }
     }
+
   </style>
 </head>
 
 <body>
 
+  <div id="childLoginOverlay" class="reward-overlay" style="display:flex;">
+
+    <div class="admin-panel" style="display:block; max-width:360px; width:90%;">
+
+      <h2>⭐ Wer bist du?</h2>
+
+      <div class="admin-grid">
+
+        <input
+          id="childPinInput"
+          type="password"
+          inputmode="numeric"
+          maxlength="3"
+          placeholder="3-stellige PIN"
+        >
+
+        <button
+          class="action open"
+          onclick="unlockChild()"
+        >
+          Einloggen
+        </button>
+
+      </div>
+    </div>
+  </div>
+
   <div id="rewardOverlay" class="reward-overlay">
+
     <div class="light-beam"></div>
-    <div id="bigStar" class="big-star">⭐</div>
+
+    <div id="bigStar" class="big-star">
+      ⭐
+    </div>
+
     <div id="rewardText" class="reward-text"></div>
+
   </div>
 
   <div class="container" id="container">
-    <div class="loading">Punkte werden geladen...</div>
+
+    <div class="loading">
+      Punkte werden geladen...
+    </div>
+
   </div>
 
-  <button class="secret-button" onclick="showPinBox()">📝</button>
+  <button
+    class="secret-button"
+    onclick="showPinBox()"
+  >
+    📝
+  </button>
 
   <div class="admin-box">
 
     <div class="admin-panel" id="pinPanel">
+
       <h2>Notiz öffnen</h2>
 
       <div class="admin-grid">
-        <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN">
-        <button class="action open" onclick="unlockAdmin()">Öffnen</button>
+
+        <input
+          id="pinInput"
+          type="password"
+          inputmode="numeric"
+          placeholder="PIN"
+        >
+
+        <button
+          class="action open"
+          onclick="unlockAdmin()"
+        >
+          Öffnen
+        </button>
+
       </div>
     </div>
 
     <div class="admin-panel" id="adminPanel">
+
       <h2>Punkte ändern</h2>
 
       <div class="admin-grid">
@@ -392,11 +616,30 @@
           <label><input type="checkbox" name="child" value="Finn"> Finn</label>
         </div>
 
-        <input id="pointsAmount" type="number" min="1" value="1" placeholder="Punkte eingeben">
+        <input
+          id="pointsAmount"
+          type="number"
+          min="1"
+          value="1"
+          placeholder="Punkte eingeben"
+        >
 
         <div class="button-row">
-          <button class="action plus" onclick="changeCustomPoints(1)">+ Punkte</button>
-          <button class="action minus" onclick="changeCustomPoints(-1)">- Punkte</button>
+
+          <button
+            class="action plus"
+            onclick="changeCustomPoints(1)"
+          >
+            + Punkte
+          </button>
+
+          <button
+            class="action minus"
+            onclick="changeCustomPoints(-1)"
+          >
+            - Punkte
+          </button>
+
         </div>
 
         <div id="adminMessage"></div>
@@ -406,8 +649,18 @@
   </div>
 
   <script>
+
     const maxPoints = 100;
+
     const parentPin = "272520";
+
+    let unlockedChild = null;
+
+    const childPins = {
+      Luna: "271",
+      Milo: "254",
+      Finn: "207"
+    };
 
     const sheetApiUrl =
       "https://script.google.com/macros/s/AKfycbwZAh0dVgBk6EG9Livlcov1k6reqpiOUoMV7zFwHHEaCyX9W_usnD40HCv_CcjOJ-Mn_A/exec";
@@ -418,39 +671,88 @@
       finn: "finn"
     };
 
-    const container = document.getElementById("container");
-    const pinPanel = document.getElementById("pinPanel");
-    const adminPanel = document.getElementById("adminPanel");
-    const adminMessage = document.getElementById("adminMessage");
+    const container =
+      document.getElementById("container");
+
+    const pinPanel =
+      document.getElementById("pinPanel");
+
+    const adminPanel =
+      document.getElementById("adminPanel");
+
+    const adminMessage =
+      document.getElementById("adminMessage");
+
+    function unlockChild() {
+
+      const pin =
+        document.getElementById("childPinInput").value;
+
+      const foundChild =
+        Object.keys(childPins).find(
+          child => childPins[child] === pin
+        );
+
+      if (!foundChild) {
+
+        alert("Falsche PIN");
+        return;
+
+      }
+
+      unlockedChild = foundChild;
+
+      document.getElementById(
+        "childLoginOverlay"
+      ).style.display = "none";
+
+      loadPoints();
+    }
 
     function showPinBox() {
+
       pinPanel.style.display = "block";
-      pinPanel.scrollIntoView({ behavior: "smooth" });
+
+      pinPanel.scrollIntoView({
+        behavior: "smooth"
+      });
     }
 
     function unlockAdmin() {
-      const pin = document.getElementById("pinInput").value;
+
+      const pin =
+        document.getElementById("pinInput").value;
 
       if (pin === parentPin) {
+
         pinPanel.style.display = "none";
         adminPanel.style.display = "block";
+
       } else {
+
         alert("Falsche PIN");
+
       }
     }
 
     async function loadPoints() {
+
       try {
-        const response = await fetch(sheetApiUrl);
+
+        const response =
+          await fetch(sheetApiUrl);
 
         if (!response.ok) {
           throw new Error("Fehler");
         }
 
-        const kids = await response.json();
+        const kids =
+          await response.json();
+
         render(kids);
 
       } catch (error) {
+
         container.innerHTML = `
           <div class="error">
             Punkte konnten nicht geladen werden.
@@ -460,70 +762,117 @@
     }
 
     async function claimChest(name) {
-      const overlay = document.getElementById("rewardOverlay");
-      const bigStar = document.getElementById("bigStar");
-      const rewardText = document.getElementById("rewardText");
+
+      if (unlockedChild !== name) {
+        return;
+      }
+
+      const overlay =
+        document.getElementById("rewardOverlay");
+
+      const bigStar =
+        document.getElementById("bigStar");
+
+      const rewardText =
+        document.getElementById("rewardText");
 
       overlay.style.display = "flex";
+
       rewardText.classList.remove("show");
       rewardText.textContent = "";
+
       bigStar.textContent = "⭐";
 
       try {
-        const response = await fetch(sheetApiUrl, {
-          method: "POST",
-          body: JSON.stringify({
-            name: name,
-            action: "claimChest"
-          })
-        });
+
+        const response = await fetch(
+          sheetApiUrl,
+          {
+            method: "POST",
+
+            body: JSON.stringify({
+              name: name,
+              action: "claimChest"
+            })
+          }
+        );
 
         const result = await response.json();
 
         setTimeout(async () => {
+
           bigStar.textContent = "🌟";
-          rewardText.textContent = `+${result.claimed} Punkte!`;
+
+          rewardText.textContent =
+            `+${result.claimed} Punkte!`;
+
           rewardText.classList.add("show");
 
-          createStarBurst(window.innerWidth / 2, window.innerHeight / 2);
+          createStarBurst(
+            window.innerWidth / 2,
+            window.innerHeight / 2
+          );
+
           await loadPoints();
 
           setTimeout(() => {
             overlay.style.display = "none";
-          }, 100);
+          }, 1500);
 
-        }, 10);
+        }, 1500);
 
       } catch (error) {
+
         overlay.style.display = "none";
-        alert("Stern konnte nicht geöffnet werden.");
+
+        alert(
+          "Stern konnte nicht geöffnet werden."
+        );
       }
     }
 
     async function changeCustomPoints(direction) {
+
       const selectedChildren = Array.from(
-        document.querySelectorAll('input[name="child"]:checked')
+        document.querySelectorAll(
+          'input[name="child"]:checked'
+        )
       ).map(input => input.value);
 
       const amount =
-        Math.abs(Number(document.getElementById("pointsAmount").value)) || 0;
+        Math.abs(
+          Number(
+            document.getElementById("pointsAmount").value
+          )
+        ) || 0;
 
       if (selectedChildren.length === 0) {
-        alert("Bitte mindestens ein Kind auswählen.");
+
+        alert(
+          "Bitte mindestens ein Kind auswählen."
+        );
+
         return;
       }
 
       if (amount <= 0) {
+
         alert("Bitte Punkte eingeben.");
+
         return;
       }
 
-      adminMessage.innerHTML = `<div class="loading">Speichere...</div>`;
+      adminMessage.innerHTML =
+        `<div class="loading">Speichere...</div>`;
 
       try {
+
         for (const name of selectedChildren) {
+
           await fetch(sheetApiUrl, {
+
             method: "POST",
+
             body: JSON.stringify({
               name: name,
               change: amount * direction
@@ -533,15 +882,21 @@
 
         adminMessage.innerHTML = `
           <div class="success">
-            Gespeichert: ${selectedChildren.join(", ")}
+            Gespeichert:
+            ${selectedChildren.join(", ")}
             ${direction > 0 ? "+" : "-"}${amount} Punkte
           </div>
         `;
 
-        createStarBurst(window.innerWidth / 2, window.innerHeight / 2);
+        createStarBurst(
+          window.innerWidth / 2,
+          window.innerHeight / 2
+        );
+
         await loadPoints();
 
       } catch (error) {
+
         adminMessage.innerHTML = `
           <div class="error">
             Speichern fehlgeschlagen
@@ -551,24 +906,45 @@
     }
 
     function render(kids) {
+
       container.innerHTML = "";
 
       kids.forEach(kid => {
-        const name = kid.name;
-        const points = Number(kid.points) || 0;
-        const unclaimed = Number(kid.unclaimed) || 0;
-        const className = colors[name.toLowerCase()] || "";
-        const percent = Math.min((points / maxPoints) * 100, 100);
 
-        const card = document.createElement("div");
-        card.className = `card ${className}`;
+        const name = kid.name;
+
+        const points =
+          Number(kid.points) || 0;
+
+        const unclaimed =
+          Number(kid.unclaimed) || 0;
+
+        const className =
+          colors[name.toLowerCase()] || "";
+
+        const percent =
+          Math.min(
+            (points / maxPoints) * 100,
+            100
+          );
+
+        const card =
+          document.createElement("div");
+
+        card.className =
+          `card ${className}`;
 
         card.innerHTML = `
           <div class="top">
+
             <div class="name">
+
               ${name}
 
-              ${unclaimed > 0
+              ${
+                unclaimed > 0 &&
+                unlockedChild === name
+
                 ? `
                   <button
                     class="chest-button"
@@ -579,29 +955,43 @@
                 `
                 : ""
               }
+
             </div>
 
             <div class="points">
               ${points} Punkte
             </div>
+
           </div>
 
           <div class="bar-bg">
-            <div class="bar" style="width:${percent}%">
+
+            <div
+              class="bar"
+              style="width:${percent}%"
+            >
               ${Math.round(percent)}%
             </div>
+
           </div>
         `;
 
         container.appendChild(card);
+
       });
     }
 
     function createStar(x, y) {
-      const star = document.createElement("div");
+
+      const star =
+        document.createElement("div");
+
       star.className = "click-star";
+
       star.textContent =
-        ["⭐", "✨", "🌟", "💫"][Math.floor(Math.random() * 4)];
+        ["⭐", "✨", "🌟", "💫"][
+          Math.floor(Math.random() * 4)
+        ];
 
       star.style.left = x + "px";
       star.style.top = y + "px";
@@ -614,22 +1004,29 @@
     }
 
     function createStarBurst(x, y) {
+
       for (let i = 0; i < 12; i++) {
+
         setTimeout(() => {
+
           createStar(
             x + Math.random() * 120 - 60,
             y + Math.random() * 80 - 40
           );
+
         }, i * 40);
       }
     }
 
     document.addEventListener("click", function(e) {
-      createStar(e.clientX, e.clientY);
+
+      createStar(
+        e.clientX,
+        e.clientY
+      );
+
     });
 
-    loadPoints();
-    setInterval(loadPoints, 10000);
   </script>
 
 </body>
