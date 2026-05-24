@@ -570,408 +570,655 @@
 
   <script>
 
-    const maxPoints = 100;
+const maxPoints = 100;
 
-    const parentPin = "272520";
+const parentPin = "272520";
 
-    let unlockedChild = null;
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbzJnFU-3C8U0EpnnbvohU57t1cWQebdQVQCx76yBq_3bOtS_5POeba4uZkTaMcp93h7/exec";
 
-    const childPins = {
-      Luna: "271",
-      Milo: "254",
-      Finn: "207"
-    };
+const API_KEY = "272520";
 
-    const sheetApiUrl =
-      "https://script.google.com/macros/s/AKfycbwZAh0dVgBk6EG9Livlcov1k6reqpiOUoMV7zFwHHEaCyX9W_usnD40HCv_CcjOJ-Mn_A/exec";
+/*
+SHEET AUFBAU
 
-    const colors = {
-      luna: "luna",
-      milo: "milo",
-      finn: "finn"
-    };
+A1 = Name
+B1 = Punkte
+C1 = Unclaimed
 
-    const container =
-      document.getElementById("container");
+A2 = Luna
+A3 = Milo
+A4 = Finn
+*/
 
-    const adminPanel =
-      document.getElementById("adminPanel");
+const kidsConfig = {
 
-    const adminMessage =
-      document.getElementById("adminMessage");
+  Luna: {
+    row: 2,
+    pin: "271",
+    className: "luna"
+  },
 
-    const savedLogin =
-      localStorage.getItem("unlockedChild");
+  Milo: {
+    row: 3,
+    pin: "254",
+    className: "milo"
+  },
 
-    if (savedLogin) {
+  Finn: {
+    row: 4,
+    pin: "207",
+    className: "finn"
+  }
 
-      unlockedChild = savedLogin;
+};
 
-      document.getElementById(
-        "childLoginOverlay"
-      ).style.display = "none";
+let unlockedChild = null;
 
-      if (savedLogin === "ADMIN") {
-        adminPanel.style.display = "block";
-      }
+const container =
+  document.getElementById("container");
+
+const adminPanel =
+  document.getElementById("adminPanel");
+
+const adminMessage =
+  document.getElementById("adminMessage");
+
+const savedLogin =
+  localStorage.getItem("unlockedChild");
+
+if (savedLogin) {
+
+  unlockedChild = savedLogin;
+
+  document.getElementById(
+    "childLoginOverlay"
+  ).style.display = "none";
+
+  if (savedLogin === "ADMIN") {
+    adminPanel.style.display = "block";
+  }
+
+}
+
+async function api(action, payload = {}) {
+
+  const response = await fetch(API_URL, {
+
+    method: "POST",
+
+    body: JSON.stringify({
+
+      key: API_KEY,
+      action,
+      ...payload
+
+    })
+
+  });
+
+  const data = await response.json();
+
+  if (!data.ok) {
+
+    throw new Error(
+      data.error || "API Fehler"
+    );
+
+  }
+
+  return data;
+
+}
+
+async function setupSheetIfEmpty() {
+
+  const result = await api(
+    "getRange",
+    {
+      range: "A1:C4"
     }
+  );
 
-    function unlockChild() {
+  const values = result.values || [];
 
-      const pin =
-        document.getElementById("childPinInput").value;
+  const firstCell =
+    values?.[0]?.[0];
 
-      if (pin === parentPin) {
+  if (firstCell) {
+    return;
+  }
 
-        unlockedChild = "ADMIN";
+  await api("setRange", {
 
-        localStorage.setItem(
-          "unlockedChild",
-          "ADMIN"
-        );
+    range: "A1:C4",
 
-        document.getElementById(
-          "childLoginOverlay"
-        ).style.display = "none";
+    values: [
 
-        adminPanel.style.display = "block";
+      ["Name", "Punkte", "Unclaimed"],
 
-        loadPoints();
+      ["Luna", 0, 0],
 
-        return;
-      }
+      ["Milo", 0, 0],
 
-      const foundChild =
-        Object.keys(childPins).find(
-          child => childPins[child] === pin
-        );
+      ["Finn", 0, 0]
 
-      if (!foundChild) {
+    ]
 
-        alert("Falsche PIN");
-        return;
-      }
+  });
 
-      unlockedChild = foundChild;
+}
 
-      localStorage.setItem(
-        "unlockedChild",
-        unlockedChild
-      );
+function unlockChild() {
 
-      document.getElementById(
-        "childLoginOverlay"
-      ).style.display = "none";
+  const pin =
+    document.getElementById(
+      "childPinInput"
+    ).value;
 
-      loadPoints();
-    }
+  if (pin === parentPin) {
 
-    function logout() {
+    unlockedChild = "ADMIN";
 
-      localStorage.removeItem(
-        "unlockedChild"
-      );
+    localStorage.setItem(
+      "unlockedChild",
+      "ADMIN"
+    );
 
-      location.reload();
-    }
+    document.getElementById(
+      "childLoginOverlay"
+    ).style.display = "none";
 
-    async function loadPoints() {
-
-      try {
-
-        const response =
-          await fetch(sheetApiUrl);
-
-        if (!response.ok) {
-          throw new Error("Fehler");
-        }
-
-        const kids =
-          await response.json();
-
-        render(kids);
-
-      } catch (error) {
-
-        container.innerHTML = `
-          <div class="error">
-            Punkte konnten nicht geladen werden.
-          </div>
-        `;
-      }
-    }
-
-    async function claimChest(name) {
-
-      if (unlockedChild !== name) {
-        return;
-      }
-
-      const overlay =
-        document.getElementById("rewardOverlay");
-
-      const bigStar =
-        document.getElementById("bigStar");
-
-      const rewardText =
-        document.getElementById("rewardText");
-
-      overlay.style.display = "flex";
-
-      rewardText.classList.remove("show");
-      rewardText.textContent = "";
-
-      bigStar.textContent = "⭐";
-
-      try {
-
-        const response = await fetch(
-          sheetApiUrl,
-          {
-            method: "POST",
-
-            body: JSON.stringify({
-              name: name,
-              action: "claimChest"
-            })
-          }
-        );
-
-        const result = await response.json();
-
-        setTimeout(async () => {
-
-          bigStar.textContent = "🌟";
-
-          rewardText.textContent =
-            `+${result.claimed} Punkte!`;
-
-          rewardText.classList.add("show");
-
-          createStarBurst(
-            window.innerWidth / 2,
-            window.innerHeight / 2
-          );
-
-          await loadPoints();
-
-          setTimeout(() => {
-            overlay.style.display = "none";
-          }, 1500);
-
-        }, 1500);
-
-      } catch (error) {
-
-        overlay.style.display = "none";
-
-        alert(
-          "Stern konnte nicht geöffnet werden."
-        );
-      }
-    }
-
-    async function changeCustomPoints(direction) {
-
-      const selectedChildren = Array.from(
-        document.querySelectorAll(
-          'input[name="child"]:checked'
-        )
-      ).map(input => input.value);
-
-      const amount =
-        Math.abs(
-          Number(
-            document.getElementById("pointsAmount").value
-          )
-        ) || 0;
-
-      if (selectedChildren.length === 0) {
-
-        alert(
-          "Bitte mindestens ein Kind auswählen."
-        );
-
-        return;
-      }
-
-      if (amount <= 0) {
-
-        alert("Bitte Punkte eingeben.");
-
-        return;
-      }
-
-      adminMessage.innerHTML =
-        `<div class="loading">Speichere...</div>`;
-
-      try {
-
-        for (const name of selectedChildren) {
-
-          await fetch(sheetApiUrl, {
-
-            method: "POST",
-
-            body: JSON.stringify({
-              name: name,
-              change: amount * direction
-            })
-          });
-        }
-
-        adminMessage.innerHTML = `
-          <div class="success">
-            Gespeichert:
-            ${selectedChildren.join(", ")}
-            ${direction > 0 ? "+" : "-"}${amount} Punkte
-          </div>
-        `;
-
-        createStarBurst(
-          window.innerWidth / 2,
-          window.innerHeight / 2
-        );
-
-        await loadPoints();
-
-      } catch (error) {
-
-        adminMessage.innerHTML = `
-          <div class="error">
-            Speichern fehlgeschlagen
-          </div>
-        `;
-      }
-    }
-
-    function render(kids) {
-
-      container.innerHTML = "";
-
-      kids.forEach(kid => {
-
-        const name = kid.name;
-
-        const points =
-          Number(kid.points) || 0;
-
-        const unclaimed =
-          Number(kid.unclaimed) || 0;
-
-        const className =
-          colors[name.toLowerCase()] || "";
-
-        const percent =
-          Math.min(
-            (points / maxPoints) * 100,
-            100
-          );
-
-        const card =
-          document.createElement("div");
-
-        card.className =
-          `card ${className}`;
-
-        card.innerHTML = `
-          <div class="top">
-
-            <div class="name">
-
-              ${name}
-
-              ${
-                unclaimed > 0 &&
-                unlockedChild === name
-
-                ? `
-                  <button
-                    class="chest-button"
-                    onclick="claimChest('${name}')"
-                  >
-                    ⭐
-                  </button>
-                `
-                : ""
-              }
-
-            </div>
-
-            <div class="points">
-              ${points} Punkte
-            </div>
-
-          </div>
-
-          <div class="bar-bg">
-
-            <div
-              class="bar"
-              style="width:${percent}%"
-            >
-              ${Math.round(percent)}%
-            </div>
-
-          </div>
-        `;
-
-        container.appendChild(card);
-
-      });
-    }
-
-    function createStar(x, y) {
-
-      const star =
-        document.createElement("div");
-
-      star.className = "click-star";
-
-      star.textContent =
-        ["⭐", "✨", "🌟", "💫"][
-          Math.floor(Math.random() * 4)
-        ];
-
-      star.style.left = x + "px";
-      star.style.top = y + "px";
-
-      document.body.appendChild(star);
-
-      setTimeout(() => {
-        star.remove();
-      }, 900);
-    }
-
-    function createStarBurst(x, y) {
-
-      for (let i = 0; i < 12; i++) {
-
-        setTimeout(() => {
-
-          createStar(
-            x + Math.random() * 120 - 60,
-            y + Math.random() * 80 - 40
-          );
-
-        }, i * 40);
-      }
-    }
-
-    document.addEventListener("click", function(e) {
-
-      createStar(
-        e.clientX,
-        e.clientY
-      );
-
-    });
+    adminPanel.style.display = "block";
 
     loadPoints();
 
-    setInterval(loadPoints, 10000);
+    return;
 
-  </script>
+  }
+
+  const foundChild =
+    Object.keys(kidsConfig).find(
+
+      child =>
+        kidsConfig[child].pin === pin
+
+    );
+
+  if (!foundChild) {
+
+    alert("Falsche PIN");
+    return;
+
+  }
+
+  unlockedChild = foundChild;
+
+  localStorage.setItem(
+    "unlockedChild",
+    unlockedChild
+  );
+
+  document.getElementById(
+    "childLoginOverlay"
+  ).style.display = "none";
+
+  loadPoints();
+
+}
+
+function logout() {
+
+  localStorage.removeItem(
+    "unlockedChild"
+  );
+
+  location.reload();
+
+}
+
+async function loadPoints() {
+
+  try {
+
+    await setupSheetIfEmpty();
+
+    const result = await api(
+      "getRange",
+      {
+        range: "A2:C4"
+      }
+    );
+
+    const kids = result.values.map(
+      row => ({
+
+        name: row[0],
+
+        points:
+          Number(row[1]) || 0,
+
+        unclaimed:
+          Number(row[2]) || 0
+
+      })
+    );
+
+    render(kids);
+
+  } catch (error) {
+
+    console.error(error);
+
+    container.innerHTML = `
+      <div class="error">
+        Punkte konnten nicht geladen werden.<br>
+        ${error.message}
+      </div>
+    `;
+
+  }
+
+}
+
+async function claimChest(name) {
+
+  if (unlockedChild !== name) {
+    return;
+  }
+
+  const config =
+    kidsConfig[name];
+
+  const row = config.row;
+
+  const overlay =
+    document.getElementById(
+      "rewardOverlay"
+    );
+
+  const bigStar =
+    document.getElementById(
+      "bigStar"
+    );
+
+  const rewardText =
+    document.getElementById(
+      "rewardText"
+    );
+
+  overlay.style.display = "flex";
+
+  rewardText.classList.remove(
+    "show"
+  );
+
+  rewardText.textContent = "";
+
+  bigStar.textContent = "⭐";
+
+  try {
+
+    const result = await api(
+      "getMany",
+      {
+        cells: [
+          `B${row}`,
+          `C${row}`
+        ]
+      }
+    );
+
+    const currentPoints =
+      Number(
+        result.values[`B${row}`]
+      ) || 0;
+
+    const unclaimed =
+      Number(
+        result.values[`C${row}`]
+      ) || 0;
+
+    if (unclaimed <= 0) {
+
+      overlay.style.display = "none";
+      return;
+
+    }
+
+    await api("setMany", {
+
+      data: [
+
+        {
+          cell: `B${row}`,
+          value:
+            currentPoints + unclaimed
+        },
+
+        {
+          cell: `C${row}`,
+          value: 0
+        }
+
+      ]
+
+    });
+
+    setTimeout(async () => {
+
+      bigStar.textContent = "🌟";
+
+      rewardText.textContent =
+        `+${unclaimed} Punkte!`;
+
+      rewardText.classList.add(
+        "show"
+      );
+
+      createStarBurst(
+        window.innerWidth / 2,
+        window.innerHeight / 2
+      );
+
+      await loadPoints();
+
+      setTimeout(() => {
+
+        overlay.style.display = "none";
+
+      }, 1500);
+
+    }, 1500);
+
+  } catch (error) {
+
+    console.error(error);
+
+    overlay.style.display = "none";
+
+    alert(
+      "Stern konnte nicht geöffnet werden."
+    );
+
+  }
+
+}
+
+async function changeCustomPoints(direction) {
+
+  const selectedChildren = Array.from(
+
+    document.querySelectorAll(
+      'input[name="child"]:checked'
+    )
+
+  ).map(
+    input => input.value
+  );
+
+  const amount = Math.abs(
+
+    Number(
+      document.getElementById(
+        "pointsAmount"
+      ).value
+    )
+
+  ) || 0;
+
+  if (selectedChildren.length === 0) {
+
+    alert(
+      "Bitte mindestens ein Kind auswählen."
+    );
+
+    return;
+
+  }
+
+  if (amount <= 0) {
+
+    alert(
+      "Bitte Punkte eingeben."
+    );
+
+    return;
+
+  }
+
+  adminMessage.innerHTML =
+    `<div class="loading">Speichere...</div>`;
+
+  try {
+
+    const cells =
+      selectedChildren.map(
+
+        name =>
+          `B${kidsConfig[name].row}`
+
+      );
+
+    const current = await api(
+      "getMany",
+      { cells }
+    );
+
+    const updates =
+      selectedChildren.map(name => {
+
+        const row =
+          kidsConfig[name].row;
+
+        const cell =
+          `B${row}`;
+
+        const oldValue =
+          Number(
+            current.values[cell]
+          ) || 0;
+
+        const newValue =
+          Math.max(
+            0,
+            oldValue +
+            amount * direction
+          );
+
+        return {
+
+          cell,
+          value: newValue
+
+        };
+
+      });
+
+    await api("setMany", {
+
+      data: updates
+
+    });
+
+    adminMessage.innerHTML = `
+      <div class="success">
+        Gespeichert:
+        ${selectedChildren.join(", ")}
+        ${direction > 0 ? "+" : "-"}${amount} Punkte
+      </div>
+    `;
+
+    createStarBurst(
+      window.innerWidth / 2,
+      window.innerHeight / 2
+    );
+
+    await loadPoints();
+
+  } catch (error) {
+
+    console.error(error);
+
+    adminMessage.innerHTML = `
+      <div class="error">
+        Speichern fehlgeschlagen<br>
+        ${error.message}
+      </div>
+    `;
+
+  }
+
+}
+
+function render(kids) {
+
+  container.innerHTML = "";
+
+  kids.forEach(kid => {
+
+    const name = kid.name;
+
+    if (
+      !name ||
+      !kidsConfig[name]
+    ) {
+      return;
+    }
+
+    const points =
+      Number(kid.points) || 0;
+
+    const unclaimed =
+      Number(kid.unclaimed) || 0;
+
+    const className =
+      kidsConfig[name].className;
+
+    const percent = Math.min(
+      (points / maxPoints) * 100,
+      100
+    );
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      `card ${className}`;
+
+    card.innerHTML = `
+      <div class="top">
+
+        <div class="name">
+
+          ${name}
+
+          ${
+            unclaimed > 0 &&
+            unlockedChild === name
+
+            ? `
+              <button
+                class="chest-button"
+                onclick="claimChest('${name}')"
+              >
+                ⭐
+              </button>
+            `
+            : ""
+          }
+
+        </div>
+
+        <div class="points">
+          ${points} Punkte
+        </div>
+
+      </div>
+
+      <div class="bar-bg">
+
+        <div
+          class="bar"
+          style="width:${percent}%"
+        >
+          ${Math.round(percent)}%
+        </div>
+
+      </div>
+    `;
+
+    container.appendChild(card);
+
+  });
+
+}
+
+function createStar(x, y) {
+
+  const star =
+    document.createElement("div");
+
+  star.className = "click-star";
+
+  star.textContent =
+    ["⭐", "✨", "🌟", "💫"][
+      Math.floor(Math.random() * 4)
+    ];
+
+  star.style.left = x + "px";
+  star.style.top = y + "px";
+
+  document.body.appendChild(star);
+
+  setTimeout(() => {
+
+    star.remove();
+
+  }, 900);
+
+}
+
+function createStarBurst(x, y) {
+
+  for (let i = 0; i < 12; i++) {
+
+    setTimeout(() => {
+
+      createStar(
+
+        x + Math.random() * 120 - 60,
+
+        y + Math.random() * 80 - 40
+
+      );
+
+    }, i * 40);
+
+  }
+
+}
+
+document.addEventListener(
+  "click",
+  function(e) {
+
+    createStar(
+      e.clientX,
+      e.clientY
+    );
+
+  }
+);
+
+loadPoints();
+
+setInterval(
+  loadPoints,
+  10000
+);
+
+</script>
 
 </body>
 </html>
