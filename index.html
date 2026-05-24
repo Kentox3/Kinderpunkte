@@ -3,62 +3,244 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kinder Punkte</title>
+<title>Kinder Punkte System</title>
 
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
+
 body{
-  margin:0;font-family:Arial,sans-serif;color:white;min-height:100vh;padding:22px;
-  background:radial-gradient(circle at top left,rgba(255,255,255,.16),transparent 35%),
-  linear-gradient(135deg,#10172f,#263b7a,#6d46c9);
+  margin:0;
+  font-family:Arial,sans-serif;
+  color:white;
+  min-height:100vh;
+  padding:22px;
+
+  background:
+    radial-gradient(circle at top left,rgba(255,255,255,.16),transparent 35%),
+    linear-gradient(135deg,#10172f,#263b7a,#6d46c9);
 }
-.container,.admin-box,.reward-box{max-width:950px;margin:auto;display:grid;gap:22px}
-.card,.admin-panel,.reward-card{
-  background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.18);
-  border-radius:26px;padding:22px;backdrop-filter:blur(12px);
-  box-shadow:0 14px 40px rgba(0,0,0,.28);overflow:hidden;
+
+.container,
+.reward-box,
+.admin-box{
+  max-width:950px;
+  margin:auto;
+  display:grid;
+  gap:22px;
 }
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
-.name{font-size:2rem;font-weight:bold;display:flex;align-items:center;gap:10px}
-.points{font-size:1.5rem;font-weight:bold}
-.bar-bg{width:100%;height:34px;background:rgba(0,0,0,.28);border-radius:999px;overflow:hidden;padding:4px}
-.bar{height:100%;min-width:42px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:bold}
-.luna .bar{background:linear-gradient(90deg,#ff7eb3,#ff4d97,#ffd1ec)}
-.milo .bar{background:linear-gradient(90deg,#5ee7ff,#1e90ff,#a9f2ff)}
-.finn .bar{background:linear-gradient(90deg,#8dff8d,#27c93f,#d6ffd6)}
-.reward-card .bar{background:linear-gradient(90deg,#ffd86b,#ff9f43,#ffeaa7)}
-.info{margin-top:10px;opacity:.9}
-button,input,select{border:none;border-radius:14px;padding:13px;font-size:1rem}
-button{cursor:pointer;font-weight:bold;color:white}
-.open{background:#3498db}.plus{background:#2ecc71}.minus{background:#e74c3c}.save{background:#9b59b6}
-.admin-panel{display:none;margin-top:22px}
-.admin-grid{display:grid;gap:12px}
-.checkbox-group{display:grid;gap:10px;background:rgba(255,255,255,.12);padding:14px;border-radius:14px}
-.checkbox-group input{width:auto;margin-right:8px;transform:scale(1.2)}
-.button-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.logout-button{display:block;margin:45px auto 10px;background:rgba(255,255,255,.15)}
-.chest-button{background:rgba(255,255,255,.16);animation:pulse 1.2s infinite}
-@keyframes pulse{50%{transform:scale(1.12)}}
-.reward-section-title{max-width:950px;margin:34px auto 12px;font-size:1.8rem;font-weight:bold}
-.reward-card{display:grid;grid-template-columns:180px 1fr auto;gap:16px;align-items:center}
-.reward-img{width:180px;height:130px;border-radius:18px;object-fit:cover;background:rgba(0,0,0,.25)}
-.reward-title{font-size:1.5rem;font-weight:bold;margin-bottom:8px}
-.reward-small{opacity:.9;margin-top:7px}
-.reward-plus{background:#2ecc71;font-size:1.4rem;min-width:52px;height:52px}
-.reward-admin-list{font-size:.95rem;line-height:1.5;background:rgba(0,0,0,.18);padding:12px;border-radius:14px}
+
+.card,
+.reward-card,
+.admin-panel{
+  background:rgba(255,255,255,.13);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:26px;
+  padding:22px;
+  backdrop-filter:blur(12px);
+  box-shadow:0 14px 40px rgba(0,0,0,.28);
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:16px;
+}
+
+.name{
+  font-size:2rem;
+  font-weight:bold;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.points{
+  font-size:1.4rem;
+  font-weight:bold;
+}
+
+.bar-bg{
+  width:100%;
+  height:34px;
+  background:rgba(0,0,0,.28);
+  border-radius:999px;
+  overflow:hidden;
+  padding:4px;
+}
+
+.bar{
+  height:100%;
+  min-width:42px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+}
+
+.luna .bar{
+  background:linear-gradient(90deg,#ff7eb3,#ff4d97,#ffd1ec);
+}
+
+.milo .bar{
+  background:linear-gradient(90deg,#5ee7ff,#1e90ff,#a9f2ff);
+}
+
+.finn .bar{
+  background:linear-gradient(90deg,#8dff8d,#27c93f,#d6ffd6);
+}
+
+.reward-card .bar{
+  background:linear-gradient(90deg,#ffd86b,#ff9f43,#ffeaa7);
+}
+
+.reward-card{
+  display:grid;
+  grid-template-columns:180px 1fr;
+  gap:18px;
+}
+
+.reward-img{
+  width:180px;
+  height:140px;
+  object-fit:cover;
+  border-radius:18px;
+}
+
+.reward-title{
+  font-size:1.5rem;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.reward-small{
+  opacity:.9;
+  margin-top:8px;
+}
+
+.reward-controls{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+}
+
+.reward-controls input{
+  width:100%;
+}
+
+button,
+input,
+select{
+  border:none;
+  border-radius:14px;
+  padding:12px;
+  font-size:1rem;
+}
+
+button{
+  cursor:pointer;
+  color:white;
+  font-weight:bold;
+}
+
+.plus{
+  background:#2ecc71;
+}
+
+.minus{
+  background:#e74c3c;
+}
+
+.save{
+  background:#9b59b6;
+}
+
+.open{
+  background:#3498db;
+}
+
+.logout-button{
+  display:block;
+  margin:45px auto 10px;
+  background:rgba(255,255,255,.15);
+}
+
+.chest-button{
+  background:rgba(255,255,255,.16);
+}
+
+.reward-section-title{
+  max-width:950px;
+  margin:34px auto 12px;
+  font-size:1.8rem;
+  font-weight:bold;
+}
+
 .reward-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;
-  z-index:9999;flex-direction:column;text-align:center
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.78);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  flex-direction:column;
 }
-.big-star{font-size:7rem;filter:drop-shadow(0 0 25px gold);animation:shake .45s infinite}
-.reward-text{font-size:2rem;font-weight:bold;margin-top:20px}
-@keyframes shake{25%{transform:rotate(5deg) scale(1.06)}50%{transform:rotate(-5deg) scale(1.1)}}
-.loading,.error,.success{text-align:center;border-radius:18px;padding:16px}
-.loading{background:rgba(255,255,255,.12)}.error{background:rgba(231,76,60,.25)}.success{background:rgba(46,204,113,.25)}
+
+.big-star{
+  font-size:7rem;
+}
+
+.reward-text{
+  font-size:2rem;
+  margin-top:18px;
+}
+
+.loading,
+.error,
+.success{
+  text-align:center;
+  border-radius:18px;
+  padding:16px;
+}
+
+.loading{
+  background:rgba(255,255,255,.12);
+}
+
+.error{
+  background:rgba(231,76,60,.25);
+}
+
+.success{
+  background:rgba(46,204,113,.25);
+}
+
+.admin-panel{
+  display:none;
+}
+
+.admin-grid{
+  display:grid;
+  gap:12px;
+}
+
 @media(max-width:700px){
-  .reward-card{grid-template-columns:1fr}
-  .reward-img{width:100%;height:180px}
-  .top{flex-direction:column;align-items:flex-start}
+
+  .reward-card{
+    grid-template-columns:1fr;
+  }
+
+  .reward-img{
+    width:100%;
+    height:220px;
+  }
+
 }
 </style>
 </head>
@@ -66,13 +248,31 @@ button{cursor:pointer;font-weight:bold;color:white}
 <body>
 
 <div id="loginOverlay" class="reward-overlay" style="display:flex">
+
   <div class="admin-panel" style="display:block;max-width:360px;width:90%">
-    <h2>⭐ Wer bist du?</h2>
+
+    <h2>⭐ Login</h2>
+
     <div class="admin-grid">
-      <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN eingeben">
-      <button class="open" onclick="unlock()">Einloggen</button>
+
+      <input
+        id="pinInput"
+        type="password"
+        placeholder="PIN oder leer für Gast"
+      >
+
+      <button class="open" onclick="unlock()">
+        Einloggen
+      </button>
+
+      <button class="save" onclick="guestLogin()">
+        Gastmodus
+      </button>
+
     </div>
+
   </div>
+
 </div>
 
 <div id="lootOverlay" class="reward-overlay">
@@ -81,625 +281,1021 @@ button{cursor:pointer;font-weight:bold;color:white}
 </div>
 
 <div class="container" id="kidsContainer">
-  <div class="loading">Lade Punkte...</div>
+  <div class="loading">Lade Kinder...</div>
 </div>
 
-<div class="reward-section-title">🎁 Gemeinsame Belohnungen</div>
+<div class="reward-section-title">
+  🎁 Belohnungen
+</div>
 
 <div class="reward-box" id="rewardsContainer">
   <div class="loading">Lade Belohnungen...</div>
 </div>
 
 <div class="admin-box">
+
   <div class="admin-panel" id="adminPanel">
 
-    <h2>Punkte / Loot vergeben</h2>
+    <h2>Loot vergeben</h2>
 
     <div class="admin-grid">
-      <div class="checkbox-group">
-        <label><input type="checkbox" name="child" value="Luna">Luna</label>
-        <label><input type="checkbox" name="child" value="Milo">Milo</label>
-        <label><input type="checkbox" name="child" value="Finn">Finn</label>
-      </div>
 
-      <input id="lootAmount" type="number" min="1" value="5" placeholder="Loot-Wert">
+      <select id="lootChild">
+        <option>Luna</option>
+        <option>Milo</option>
+        <option>Finn</option>
+      </select>
 
-      <div class="button-row">
-        <button class="plus" onclick="changeLoot(1)">+ Loot</button>
-        <button class="minus" onclick="changeLoot(-1)">- Loot</button>
-      </div>
+      <input
+        id="lootAmount"
+        type="number"
+        value="5"
+        min="1"
+      >
 
-      <div id="adminMessage"></div>
+      <button class="plus" onclick="giveLoot()">
+        Loot vergeben
+      </button>
+
     </div>
 
-    <h2>Belohnung erstellen / bearbeiten</h2>
+    <h2>Belohnung erstellen</h2>
 
     <div class="admin-grid">
-      <select id="rewardSelect" onchange="fillRewardForm()">
+
+      <select id="rewardSelect">
         <option value="">Neue Belohnung</option>
       </select>
 
-      <input id="rewardTitle" placeholder="Titel, z.B. Kinoabend">
-      <input id="rewardTarget" type="number" min="1" placeholder="Zielpunkte, z.B. 150">
+      <input id="rewardTitle" placeholder="Titel">
+      <input id="rewardTarget" type="number" placeholder="Zielpunkte">
+
       <input id="rewardImg1" placeholder="Bild URL 1">
       <input id="rewardImg2" placeholder="Bild URL 2">
       <input id="rewardImg3" placeholder="Bild URL 3">
 
-      <button class="save" onclick="saveReward()">Belohnung speichern</button>
-      <button class="minus" onclick="deactivateReward()">Belohnung deaktivieren</button>
+      <select id="rewardVisibleFor">
+        <option value="ALL">ALL</option>
+        <option value="Luna">Luna</option>
+        <option value="Milo">Milo</option>
+        <option value="Finn">Finn</option>
+      </select>
 
-      <div id="rewardAdminInfo" class="reward-admin-list"></div>
+      <button class="save" onclick="saveReward()">
+        Speichern
+      </button>
+
     </div>
 
   </div>
+
 </div>
 
-<button class="logout-button" onclick="logout()">Logout</button>
+<button class="logout-button" onclick="logout()">
+  Logout
+</button>
 
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbzJnFU-3C8U0EpnnbvohU57t1cWQebdQVQCx76yBq_3bOtS_5POeba4uZkTaMcp93h7/exec";
-const API_KEY="272520";
 
-const parentPin="272520";
-const maxPoints=100;
-const donateAmount=5;
+const API_URL =
+"https://script.google.com/macros/s/AKfycbzJnFU-3C8U0EpnnbvohU57t1cWQebdQVQCx76yBq_3bOtS_5POeba4uZkTaMcp93h7/exec";
 
-const kidsConfig={
-  Luna:{row:2,pin:"271",className:"luna",contributionCol:"H"},
-  Milo:{row:3,pin:"254",className:"milo",contributionCol:"I"},
-  Finn:{row:4,pin:"207",className:"finn",contributionCol:"J"}
+const API_KEY = "272520";
+
+const parentPin = "272520";
+
+const kidsConfig = {
+
+  Luna:{
+    row:2,
+    pin:"271",
+    className:"luna",
+    contributionCol:"I"
+  },
+
+  Milo:{
+    row:3,
+    pin:"254",
+    className:"milo",
+    contributionCol:"J"
+  },
+
+  Finn:{
+    row:4,
+    pin:"207",
+    className:"finn",
+    contributionCol:"K"
+  }
+
 };
 
-const firstLootColumn=4;
-const lootSlots=20;
-const rewardsStartRow=11;
-const rewardsEndRow=30;
+const firstLootColumn = 4;
+const lootSlots = 20;
 
-let unlockedChild=null;
-let kidsData=[];
-let rewardsData=[];
-let slideTick=0;
+const rewardsStartRow = 11;
+const rewardsEndRow = 40;
 
-const kidsContainer=document.getElementById("kidsContainer");
-const rewardsContainer=document.getElementById("rewardsContainer");
-const adminPanel=document.getElementById("adminPanel");
-const adminMessage=document.getElementById("adminMessage");
+let unlockedChild = null;
+let rewardsData = [];
+let kidsData = [];
+let loadingReward = false;
+let slideTick = 0;
 
-const saved=localStorage.getItem("unlockedChild");
+const kidsContainer =
+document.getElementById("kidsContainer");
 
-if(saved){
-  unlockedChild=saved;
-  document.getElementById("loginOverlay").style.display="none";
-  if(saved==="ADMIN"){
-    adminPanel.style.display="block";
-  }
-}
+const rewardsContainer =
+document.getElementById("rewardsContainer");
 
-async function api(action,payload={}){
-  const res=await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      key:API_KEY,
-      action,
-      ...payload
-    })
-  });
+const adminPanel =
+document.getElementById("adminPanel");
 
-  const data=await res.json();
+const savedLogin =
+localStorage.getItem("unlockedChild");
 
-  if(!data.ok){
-    throw new Error(data.error||"API Fehler");
+if(savedLogin){
+
+  unlockedChild = savedLogin;
+
+  document.getElementById(
+    "loginOverlay"
+  ).style.display = "none";
+
+  if(savedLogin === "ADMIN"){
+    adminPanel.style.display = "block";
   }
 
-  return data;
 }
 
-function col(n){
-  let s="";
-  while(n>0){
-    let r=(n-1)%26;
-    s=String.fromCharCode(65+r)+s;
-    n=Math.floor((n-1)/26);
-  }
-  return s;
-}
+function guestLogin(){
 
-function lootCell(row,index){
-  return `${col(firstLootColumn+index)}${row}`;
-}
+  unlockedChild = "GAST";
 
-function countOpen(slots){
-  return slots.filter(v=>Number(v)>0).length;
-}
+  localStorage.setItem(
+    "unlockedChild",
+    "GAST"
+  );
 
-function highestFilled(slots){
-  for(let i=slots.length-1;i>=0;i--){
-    if(Number(slots[i])>0){
-      return i;
-    }
-  }
-  return -1;
-}
+  document.getElementById(
+    "loginOverlay"
+  ).style.display = "none";
 
-function nextFree(slots){
-  return slots.findIndex(v=>Number(v)<=0);
-}
+  loadAll();
 
-async function setupSheet(){
-  const res=await api("getRange",{range:"A1:W4"});
-
-  if(res.values?.[0]?.[0]){
-    return;
-  }
-
-  const headers=["Name","Punkte","Unclaimed"];
-
-  for(let i=1;i<=20;i++){
-    headers.push("U"+i);
-  }
-
-  await api("setRange",{
-    range:"A1:W4",
-    values:[
-      headers,
-      ["Luna",0,0,...Array(20).fill(0)],
-      ["Milo",0,0,...Array(20).fill(0)],
-      ["Finn",0,0,...Array(20).fill(0)]
-    ]
-  });
-}
-
-async function setupRewardHeader(){
-  const res=await api("getRange",{range:"A10:J10"});
-
-  if(res.values?.[0]?.[0]){
-    return;
-  }
-
-  await api("setRange",{
-    range:"A10:J10",
-    values:[
-      ["RewardID","Titel","Zielpunkte","Bild1","Bild2","Bild3","Aktiv","Luna","Milo","Finn"]
-    ]
-  });
 }
 
 function unlock(){
-  const pin=document.getElementById("pinInput").value;
 
-  if(pin===parentPin){
-    unlockedChild="ADMIN";
-    localStorage.setItem("unlockedChild","ADMIN");
-    document.getElementById("loginOverlay").style.display="none";
-    adminPanel.style.display="block";
+  const pin =
+  document.getElementById("pinInput").value;
+
+  if(pin === parentPin){
+
+    unlockedChild = "ADMIN";
+
+    localStorage.setItem(
+      "unlockedChild",
+      "ADMIN"
+    );
+
+    document.getElementById(
+      "loginOverlay"
+    ).style.display = "none";
+
+    adminPanel.style.display = "block";
+
     loadAll();
+
     return;
   }
 
-  const child=Object.keys(kidsConfig).find(k=>kidsConfig[k].pin===pin);
+  const child =
+  Object.keys(kidsConfig).find(
+    k => kidsConfig[k].pin === pin
+  );
 
   if(!child){
+
     alert("Falsche PIN");
     return;
   }
 
-  unlockedChild=child;
-  localStorage.setItem("unlockedChild",child);
-  document.getElementById("loginOverlay").style.display="none";
+  unlockedChild = child;
+
+  localStorage.setItem(
+    "unlockedChild",
+    child
+  );
+
+  document.getElementById(
+    "loginOverlay"
+  ).style.display = "none";
+
   loadAll();
+
 }
 
 function logout(){
-  localStorage.removeItem("unlockedChild");
+
+  localStorage.removeItem(
+    "unlockedChild"
+  );
+
   location.reload();
+
+}
+
+async function api(action,payload={}){
+
+  const response = await fetch(
+    API_URL,
+    {
+      method:"POST",
+      body:JSON.stringify({
+        key:API_KEY,
+        action,
+        ...payload
+      })
+    }
+  );
+
+  const data =
+  await response.json();
+
+  if(!data.ok){
+    throw new Error(
+      data.error || "API Fehler"
+    );
+  }
+
+  return data;
+
+}
+
+function columnLetter(columnNumber){
+
+  let letter = "";
+
+  while(columnNumber > 0){
+
+    const remainder =
+    (columnNumber - 1) % 26;
+
+    letter =
+    String.fromCharCode(65 + remainder)
+    + letter;
+
+    columnNumber =
+    Math.floor((columnNumber - 1) / 26);
+
+  }
+
+  return letter;
+
+}
+
+function lootCell(row,index){
+
+  return `${columnLetter(
+    firstLootColumn + index
+  )}${row}`;
+
+}
+
+function countOpen(slots){
+
+  return slots.filter(
+    v => Number(v) > 0
+  ).length;
+
+}
+
+function highestFilled(slots){
+
+  for(
+    let i = slots.length - 1;
+    i >= 0;
+    i--
+  ){
+
+    if(Number(slots[i]) > 0){
+      return i;
+    }
+
+  }
+
+  return -1;
+
+}
+
+function nextFree(slots){
+
+  return slots.findIndex(
+    v => Number(v) <= 0
+  );
+
 }
 
 async function loadAll(){
-  try{
-    await setupSheet();
-    await setupRewardHeader();
-    await loadKids();
-    await loadRewards();
-  }catch(e){
-    kidsContainer.innerHTML=`<div class="error">${e.message}</div>`;
-  }
+
+  await loadKids();
+  await loadRewards();
+
 }
 
 async function loadKids(){
-  const res=await api("getRange",{range:"A2:W4"});
 
-  kidsData=res.values.map(row=>{
-    const slots=row.slice(3,23).map(v=>Number(v)||0);
+  const res =
+  await api("getRange",{
+    range:"A2:W4"
+  });
 
-    return{
+  kidsData =
+  res.values.map(row => {
+
+    const slots =
+    row.slice(3,23)
+    .map(v => Number(v) || 0);
+
+    return {
       name:row[0],
-      points:Number(row[1])||0,
+      points:Number(row[1]) || 0,
       unclaimed:countOpen(slots),
       slots
     };
+
   });
 
-  const updates=kidsData
-    .filter(k=>kidsConfig[k.name])
-    .map(k=>({
-      cell:`C${kidsConfig[k.name].row}`,
-      value:k.unclaimed
-    }));
-
-  if(updates.length){
-    await api("setMany",{data:updates});
-  }
-
   renderKids();
+
 }
 
 async function loadRewards(){
-  const res=await api("getRange",{range:`A${rewardsStartRow}:J${rewardsEndRow}`});
 
-  rewardsData=res.values.map((row,i)=>({
+  const res =
+  await api("getRange",{
+    range:`A${rewardsStartRow}:K${rewardsEndRow}`
+  });
+
+  rewardsData =
+  res.values.map((row,i)=>({
+
     row:rewardsStartRow+i,
+
     id:row[0],
+
     title:row[1],
-    target:Number(row[2])||0,
-    images:[row[3],row[4],row[5]].filter(Boolean),
-    active:String(row[6]).toUpperCase()!=="FALSE" && !!row[1],
-    Luna:Number(row[7])||0,
-    Milo:Number(row[8])||0,
-    Finn:Number(row[9])||0
-  })).filter(r=>r.title);
+
+    target:Number(row[2]) || 0,
+
+    images:[
+      row[3],
+      row[4],
+      row[5]
+    ].filter(Boolean),
+
+    active:
+      String(row[6]).toUpperCase() !== "FALSE"
+      && !!row[1],
+
+    visibleFor:row[7] || "ALL",
+
+    Luna:Number(row[8]) || 0,
+    Milo:Number(row[9]) || 0,
+    Finn:Number(row[10]) || 0
+
+  }))
+  .filter(r => r.title);
 
   renderRewards();
-  renderRewardAdmin();
+
 }
 
 function renderKids(){
-  kidsContainer.innerHTML="";
 
-  kidsData.forEach(k=>{
-    if(!kidsConfig[k.name]){
+  kidsContainer.innerHTML = "";
+
+  kidsData.forEach(kid => {
+
+    if(!kidsConfig[kid.name]){
       return;
     }
 
-    const percent=Math.min((k.points/maxPoints)*100,100);
-    const width=percent>0?Math.max(percent,8):0;
+    const percent =
+    Math.min(
+      (kid.points / 100) * 100,
+      100
+    );
 
-    const card=document.createElement("div");
-    card.className=`card ${kidsConfig[k.name].className}`;
+    const width =
+    percent > 0
+    ? Math.max(percent,8)
+    : 0;
 
-    card.innerHTML=`
+    const card =
+    document.createElement("div");
+
+    card.className =
+    `card ${kidsConfig[kid.name].className}`;
+
+    card.innerHTML = `
+
       <div class="top">
+
         <div class="name">
-          ${k.name}
+
+          ${kid.name}
+
           ${
-            k.unclaimed>0 && unlockedChild===k.name
-            ? `<button class="chest-button" onclick="claimLoot('${k.name}')">⭐</button>`
+            kid.unclaimed > 0
+            &&
+            unlockedChild === kid.name
+
+            ? `
+              <button
+                class="chest-button"
+                onclick="claimLoot('${kid.name}')"
+              >
+                ⭐
+              </button>
+            `
             : ""
           }
+
         </div>
-        <div class="points">${k.points} Punkte</div>
+
+        <div class="points">
+          ${kid.points} Punkte
+        </div>
+
       </div>
 
       <div class="bar-bg">
-        <div class="bar" style="width:${width}%">${Math.round(percent)}%</div>
+
+        <div
+          class="bar"
+          style="width:${width}%"
+        >
+          ${Math.round(percent)}%
+        </div>
+
       </div>
 
-      <div class="info">${k.unclaimed} Belohnungen offen</div>
+      <div class="info">
+        ${kid.unclaimed} Belohnungen offen
+      </div>
+
     `;
 
     kidsContainer.appendChild(card);
-  });
-}
 
-async function claimLoot(name){
-  if(unlockedChild!==name){
-    return;
-  }
-
-  const row=kidsConfig[name].row;
-  const res=await api("getRange",{range:`A${row}:W${row}`});
-  const rv=res.values[0];
-
-  const currentPoints=Number(rv[1])||0;
-  const slots=rv.slice(3,23).map(v=>Number(v)||0);
-  const index=highestFilled(slots);
-
-  if(index===-1){
-    return;
-  }
-
-  const reward=slots[index];
-  slots[index]=0;
-
-  await api("setMany",{
-    data:[
-      {cell:`B${row}`,value:currentPoints+reward},
-      {cell:`C${row}`,value:countOpen(slots)},
-      {cell:lootCell(row,index),value:0}
-    ]
   });
 
-  const overlay=document.getElementById("lootOverlay");
-  const text=document.getElementById("lootText");
-
-  text.innerHTML=`+${reward} Punkte!<br><small>${countOpen(slots)} Belohnungen übrig</small>`;
-  overlay.style.display="flex";
-
-  setTimeout(()=>{
-    overlay.style.display="none";
-  },1600);
-
-  await loadKids();
 }
 
-async function changeLoot(direction){
-  const selected=[...document.querySelectorAll('input[name="child"]:checked')].map(i=>i.value);
-  const amount=Math.abs(Number(document.getElementById("lootAmount").value))||0;
+function canSeeReward(reward){
 
-  if(!selected.length){
-    alert("Kind auswählen");
-    return;
+  if(unlockedChild === "ADMIN"){
+    return true;
   }
 
-  if(amount<=0){
-    alert("Punkte eingeben");
-    return;
+  if(reward.visibleFor === "ALL"){
+    return true;
   }
 
-  const updates=[];
-  const messages=[];
+  return reward.visibleFor === unlockedChild;
 
-  for(const name of selected){
-    const row=kidsConfig[name].row;
-    const res=await api("getRange",{range:`D${row}:W${row}`});
-    const slots=res.values[0].map(v=>Number(v)||0);
-
-    if(direction>0){
-      const free=nextFree(slots);
-
-      if(free===-1){
-        messages.push(`${name}: keine freien Slots`);
-        continue;
-      }
-
-      slots[free]=amount;
-      updates.push({cell:lootCell(row,free),value:amount});
-      messages.push(`${name}: +${amount} in U${free+1}`);
-    }else{
-      let rest=amount;
-
-      for(let i=lootSlots-1;i>=0;i--){
-        if(rest<=0){
-          break;
-        }
-
-        const old=slots[i];
-
-        if(old<=0){
-          continue;
-        }
-
-        const neu=Math.max(0,old-rest);
-        rest-=old-neu;
-        slots[i]=neu;
-
-        updates.push({cell:lootCell(row,i),value:neu});
-      }
-
-      messages.push(`${name}: -${amount}`);
-    }
-
-    updates.push({cell:`C${row}`,value:countOpen(slots)});
-  }
-
-  if(updates.length){
-    await api("setMany",{data:updates});
-  }
-
-  adminMessage.innerHTML=`<div class="success">${messages.join("<br>")}</div>`;
-
-  await loadKids();
 }
 
 function renderRewards(){
-  rewardsContainer.innerHTML="";
 
-  const active=rewardsData.filter(r=>r.active);
+  rewardsContainer.innerHTML = "";
 
-  if(!active.length){
-    rewardsContainer.innerHTML=`<div class="loading">Noch keine Belohnungen erstellt.</div>`;
+  const visibleRewards =
+  rewardsData.filter(
+    r => r.active && canSeeReward(r)
+  );
+
+  if(!visibleRewards.length){
+
+    rewardsContainer.innerHTML = `
+      <div class="loading">
+        Keine Belohnungen
+      </div>
+    `;
+
     return;
   }
 
-  active.forEach(r=>{
-    const total=r.Luna+r.Milo+r.Finn;
-    const percent=r.target>0?Math.min((total/r.target)*100,100):0;
-    const width=percent>0?Math.max(percent,8):0;
-    const img=r.images.length?r.images[slideTick%r.images.length]:"";
+  visibleRewards.forEach(reward => {
 
-    const card=document.createElement("div");
-    card.className="reward-card";
+    const total =
+    reward.Luna +
+    reward.Milo +
+    reward.Finn;
 
-    card.innerHTML=`
-      <img class="reward-img" src="${img}" onerror="this.style.display='none'">
+    const percent =
+    reward.target > 0
+    ? Math.min(
+      (total / reward.target) * 100,
+      100
+    )
+    : 0;
+
+    const width =
+    percent > 0
+    ? Math.max(percent,8)
+    : 0;
+
+    const image =
+    reward.images.length
+    ? reward.images[
+      slideTick % reward.images.length
+    ]
+    : "";
+
+    const card =
+    document.createElement("div");
+
+    card.className = "reward-card";
+
+    card.innerHTML = `
+
+      <img
+        class="reward-img"
+        src="${image}"
+      >
 
       <div>
-        <div class="reward-title">${r.title}</div>
+
+        <div class="reward-title">
+          ${reward.title}
+        </div>
 
         <div class="bar-bg">
-          <div class="bar" style="width:${width}%">${Math.round(percent)}%</div>
-        </div>
 
-        <div class="reward-small">${total} / ${r.target} Punkte</div>
+          <div
+            class="bar"
+            style="width:${width}%"
+          >
+            ${Math.round(percent)}%
+          </div>
+
+        </div>
 
         <div class="reward-small">
-          Luna: ${r.Luna} · Milo: ${r.Milo} · Finn: ${r.Finn}
+          ${total} / ${reward.target} Punkte
         </div>
+
+        <div class="reward-small">
+          Luna: ${reward.Luna}
+          ·
+          Milo: ${reward.Milo}
+          ·
+          Finn: ${reward.Finn}
+        </div>
+
+        ${
+          unlockedChild
+          &&
+          unlockedChild !== "ADMIN"
+          &&
+          unlockedChild !== "GAST"
+
+          ? `
+            <div class="reward-controls">
+
+              <input
+                type="number"
+                min="1"
+                value="5"
+                id="amount-${reward.row}"
+              >
+
+              <button
+                class="plus"
+                onclick="donate(${reward.row})"
+              >
+                +
+              </button>
+
+              <button
+                class="minus"
+                onclick="withdraw(${reward.row})"
+              >
+                -
+              </button>
+
+            </div>
+          `
+          : ""
+        }
+
       </div>
 
-      ${
-        unlockedChild && unlockedChild!=="ADMIN"
-        ? `<button class="reward-plus" onclick="donateToReward(${r.row})">+${donateAmount}</button>`
-        : ""
-      }
     `;
 
     rewardsContainer.appendChild(card);
+
   });
+
 }
 
-async function donateToReward(row){
-  if(!unlockedChild || unlockedChild==="ADMIN"){
+async function donate(row){
+
+  if(loadingReward){
     return;
   }
 
-  const child=kidsConfig[unlockedChild];
-  const kid=kidsData.find(k=>k.name===unlockedChild);
+  loadingReward = true;
 
-  if(!kid || kid.points<donateAmount){
-    alert("Nicht genug Punkte");
+  try{
+
+    const amount =
+    Number(
+      document.getElementById(
+        `amount-${row}`
+      ).value
+    ) || 0;
+
+    if(amount <= 0){
+      return;
+    }
+
+    const child =
+    kidsConfig[unlockedChild];
+
+    const kid =
+    kidsData.find(
+      k => k.name === unlockedChild
+    );
+
+    if(kid.points < amount){
+
+      alert("Nicht genug Punkte");
+
+      loadingReward = false;
+      return;
+    }
+
+    const reward =
+    rewardsData.find(r => r.row === row);
+
+    const current =
+    Number(
+      reward[unlockedChild]
+    ) || 0;
+
+    await api("setMany",{
+
+      data:[
+
+        {
+          cell:`B${child.row}`,
+          value:kid.points - amount
+        },
+
+        {
+          cell:`${child.contributionCol}${row}`,
+          value:current + amount
+        }
+
+      ]
+
+    });
+
+    await loadAll();
+
+  }catch(error){
+
+    alert(error.message);
+
+  }
+
+  loadingReward = false;
+
+}
+
+async function withdraw(row){
+
+  if(loadingReward){
     return;
   }
 
-  const reward=rewardsData.find(r=>r.row===row);
+  loadingReward = true;
 
-  if(!reward){
+  try{
+
+    const amount =
+    Number(
+      document.getElementById(
+        `amount-${row}`
+      ).value
+    ) || 0;
+
+    if(amount <= 0){
+      return;
+    }
+
+    const child =
+    kidsConfig[unlockedChild];
+
+    const kid =
+    kidsData.find(
+      k => k.name === unlockedChild
+    );
+
+    const reward =
+    rewardsData.find(r => r.row === row);
+
+    const current =
+    Number(
+      reward[unlockedChild]
+    ) || 0;
+
+    if(current < amount){
+
+      alert(
+        "Du kannst nur deine eigenen Punkte zurücknehmen"
+      );
+
+      loadingReward = false;
+      return;
+    }
+
+    await api("setMany",{
+
+      data:[
+
+        {
+          cell:`B${child.row}`,
+          value:kid.points + amount
+        },
+
+        {
+          cell:`${child.contributionCol}${row}`,
+          value:current - amount
+        }
+
+      ]
+
+    });
+
+    await loadAll();
+
+  }catch(error){
+
+    alert(error.message);
+
+  }
+
+  loadingReward = false;
+
+}
+
+async function claimLoot(name){
+
+  const row =
+  kidsConfig[name].row;
+
+  const res =
+  await api("getRange",{
+    range:`A${row}:W${row}`
+  });
+
+  const rowValues =
+  res.values[0];
+
+  const currentPoints =
+  Number(rowValues[1]) || 0;
+
+  const slots =
+  rowValues.slice(3,23)
+  .map(v => Number(v) || 0);
+
+  const slotIndex =
+  highestFilled(slots);
+
+  if(slotIndex === -1){
     return;
   }
 
-  const newKidPoints=kid.points-donateAmount;
-  const contributionCell=`${child.contributionCol}${row}`;
-  const oldContribution=Number(reward[unlockedChild])||0;
+  const reward =
+  slots[slotIndex];
+
+  slots[slotIndex] = 0;
 
   await api("setMany",{
+
     data:[
-      {cell:`B${child.row}`,value:newKidPoints},
-      {cell:contributionCell,value:oldContribution+donateAmount}
+
+      {
+        cell:`B${row}`,
+        value:currentPoints + reward
+      },
+
+      {
+        cell:`C${row}`,
+        value:countOpen(slots)
+      },
+
+      {
+        cell:lootCell(row,slotIndex),
+        value:0
+      }
+
     ]
+
   });
 
-  await loadAll();
+  const overlay =
+  document.getElementById(
+    "lootOverlay"
+  );
+
+  const text =
+  document.getElementById(
+    "lootText"
+  );
+
+  text.innerHTML =
+  `+${reward} Punkte`;
+
+  overlay.style.display = "flex";
+
+  setTimeout(()=>{
+    overlay.style.display = "none";
+  },1500);
+
+  await loadKids();
+
 }
 
-function renderRewardAdmin(){
-  const select=document.getElementById("rewardSelect");
-  select.innerHTML=`<option value="">Neue Belohnung</option>`;
+async function giveLoot(){
 
-  rewardsData.forEach(r=>{
-    select.innerHTML+=`<option value="${r.row}">${r.title}</option>`;
-  });
+  const name =
+  document.getElementById(
+    "lootChild"
+  ).value;
 
-  const info=document.getElementById("rewardAdminInfo");
+  const amount =
+  Number(
+    document.getElementById(
+      "lootAmount"
+    ).value
+  ) || 0;
 
-  if(!rewardsData.length){
-    info.innerHTML="Noch keine Belohnungen.";
+  if(amount <= 0){
     return;
   }
 
-  info.innerHTML=rewardsData.map(r=>`
-    <b>${r.title}</b><br>
-    Ziel: ${r.target}<br>
-    Aktiv: ${r.active ? "Ja" : "Nein"}<br>
-    Luna: ${r.Luna}, Milo: ${r.Milo}, Finn: ${r.Finn}<br>
-    Gesamt: ${r.Luna+r.Milo+r.Finn}<hr>
-  `).join("");
-}
+  const row =
+  kidsConfig[name].row;
 
-function fillRewardForm(){
-  const row=Number(document.getElementById("rewardSelect").value);
-  const r=rewardsData.find(x=>x.row===row);
+  const res =
+  await api("getRange",{
+    range:`D${row}:W${row}`
+  });
 
-  if(!r){
-    document.getElementById("rewardTitle").value="";
-    document.getElementById("rewardTarget").value="";
-    document.getElementById("rewardImg1").value="";
-    document.getElementById("rewardImg2").value="";
-    document.getElementById("rewardImg3").value="";
+  const slots =
+  res.values[0]
+  .map(v => Number(v) || 0);
+
+  const free =
+  nextFree(slots);
+
+  if(free === -1){
+
+    alert("Keine freien Slots");
     return;
   }
 
-  document.getElementById("rewardTitle").value=r.title;
-  document.getElementById("rewardTarget").value=r.target;
-  document.getElementById("rewardImg1").value=r.images[0]||"";
-  document.getElementById("rewardImg2").value=r.images[1]||"";
-  document.getElementById("rewardImg3").value=r.images[2]||"";
+  slots[free] = amount;
+
+  await api("setMany",{
+
+    data:[
+
+      {
+        cell:lootCell(row,free),
+        value:amount
+      },
+
+      {
+        cell:`C${row}`,
+        value:countOpen(slots)
+      }
+
+    ]
+
+  });
+
+  await loadKids();
+
 }
 
 async function saveReward(){
-  const selectedRow=Number(document.getElementById("rewardSelect").value);
-  const title=document.getElementById("rewardTitle").value.trim();
-  const target=Number(document.getElementById("rewardTarget").value)||0;
-  const img1=document.getElementById("rewardImg1").value.trim();
-  const img2=document.getElementById("rewardImg2").value.trim();
-  const img3=document.getElementById("rewardImg3").value.trim();
 
-  if(!title){
-    alert("Titel fehlt");
+  const title =
+  document.getElementById(
+    "rewardTitle"
+  ).value.trim();
+
+  const target =
+  Number(
+    document.getElementById(
+      "rewardTarget"
+    ).value
+  ) || 0;
+
+  const img1 =
+  document.getElementById(
+    "rewardImg1"
+  ).value.trim();
+
+  const img2 =
+  document.getElementById(
+    "rewardImg2"
+  ).value.trim();
+
+  const img3 =
+  document.getElementById(
+    "rewardImg3"
+  ).value.trim();
+
+  const visibleFor =
+  document.getElementById(
+    "rewardVisibleFor"
+  ).value;
+
+  if(!title || target <= 0){
+
+    alert("Titel/Ziel fehlt");
     return;
   }
 
-  if(target<=0){
-    alert("Zielpunkte fehlen");
-    return;
-  }
+  let row = null;
 
-  let row=selectedRow;
+  const used =
+  rewardsData.map(r => r.row);
 
-  if(!row){
-    const usedRows=rewardsData.map(r=>r.row);
+  for(
+    let r = rewardsStartRow;
+    r <= rewardsEndRow;
+    r++
+  ){
 
-    for(let r=rewardsStartRow;r<=rewardsEndRow;r++){
-      if(!usedRows.includes(r)){
-        row=r;
-        break;
-      }
+    if(!used.includes(r)){
+      row = r;
+      break;
     }
+
   }
 
   if(!row){
-    alert("Keine freien Belohnungs-Zeilen mehr");
+
+    alert("Keine freien Reward-Zeilen");
     return;
   }
-
-  const existing=rewardsData.find(r=>r.row===row);
-  const id=existing?.id || `R${Date.now()}`;
-  const luna=existing?.Luna || 0;
-  const milo=existing?.Milo || 0;
-  const finn=existing?.Finn || 0;
 
   await api("setRange",{
-    range:`A${row}:J${row}`,
-    values:[[id,title,target,img1,img2,img3,true,luna,milo,finn]]
+
+    range:`A${row}:K${row}`,
+
+    values:[[
+      `R${Date.now()}`,
+      title,
+      target,
+      img1,
+      img2,
+      img3,
+      true,
+      visibleFor,
+      0,
+      0,
+      0
+    ]]
+
   });
 
   await loadRewards();
 
-  alert("Belohnung gespeichert");
-}
+  alert("Gespeichert");
 
-async function deactivateReward(){
-  const row=Number(document.getElementById("rewardSelect").value);
-
-  if(!row){
-    alert("Belohnung auswählen");
-    return;
-  }
-
-  await api("set",{
-    cell:`G${row}`,
-    value:false
-  });
-
-  await loadRewards();
 }
 
 loadAll();
 
 setInterval(()=>{
+
   slideTick++;
+
   renderRewards();
+
 },3500);
 
 setInterval(loadAll,15000);
+
 </script>
 
 </body>
