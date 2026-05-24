@@ -22,10 +22,11 @@ body{
 .name{font-size:2rem;font-weight:bold;display:flex;align-items:center;gap:10px}
 .points{font-size:1.5rem;font-weight:bold}
 .bar-bg{width:100%;height:34px;background:rgba(0,0,0,.28);border-radius:999px;overflow:hidden;padding:4px}
-.bar{height:100%;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:bold}
+.bar{height:100%;min-width:42px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:bold}
 .luna .bar{background:linear-gradient(90deg,#ff7eb3,#ff4d97,#ffd1ec)}
 .milo .bar{background:linear-gradient(90deg,#5ee7ff,#1e90ff,#a9f2ff)}
 .finn .bar{background:linear-gradient(90deg,#8dff8d,#27c93f,#d6ffd6)}
+.reward-card .bar{background:linear-gradient(90deg,#ffd86b,#ff9f43,#ffeaa7)}
 .info{margin-top:10px;opacity:.9}
 button,input,select{border:none;border-radius:14px;padding:13px;font-size:1rem}
 button{cursor:pointer;font-weight:bold;color:white}
@@ -40,9 +41,7 @@ button{cursor:pointer;font-weight:bold;color:white}
 @keyframes pulse{50%{transform:scale(1.12)}}
 .reward-section-title{max-width:950px;margin:34px auto 12px;font-size:1.8rem;font-weight:bold}
 .reward-card{display:grid;grid-template-columns:180px 1fr auto;gap:16px;align-items:center}
-.reward-img{
-  width:180px;height:130px;border-radius:18px;object-fit:cover;background:rgba(0,0,0,.25)
-}
+.reward-img{width:180px;height:130px;border-radius:18px;object-fit:cover;background:rgba(0,0,0,.25)}
 .reward-title{font-size:1.5rem;font-weight:bold;margin-bottom:8px}
 .reward-small{opacity:.9;margin-top:7px}
 .reward-plus{background:#2ecc71;font-size:1.4rem;min-width:52px;height:52px}
@@ -86,6 +85,7 @@ button{cursor:pointer;font-weight:bold;color:white}
 </div>
 
 <div class="reward-section-title">🎁 Gemeinsame Belohnungen</div>
+
 <div class="reward-box" id="rewardsContainer">
   <div class="loading">Lade Belohnungen...</div>
 </div>
@@ -103,6 +103,7 @@ button{cursor:pointer;font-weight:bold;color:white}
       </div>
 
       <input id="lootAmount" type="number" min="1" value="5" placeholder="Loot-Wert">
+
       <div class="button-row">
         <button class="plus" onclick="changeLoot(1)">+ Loot</button>
         <button class="minus" onclick="changeLoot(-1)">- Loot</button>
@@ -165,19 +166,31 @@ const adminPanel=document.getElementById("adminPanel");
 const adminMessage=document.getElementById("adminMessage");
 
 const saved=localStorage.getItem("unlockedChild");
+
 if(saved){
   unlockedChild=saved;
   document.getElementById("loginOverlay").style.display="none";
-  if(saved==="ADMIN") adminPanel.style.display="block";
+  if(saved==="ADMIN"){
+    adminPanel.style.display="block";
+  }
 }
 
 async function api(action,payload={}){
   const res=await fetch(API_URL,{
     method:"POST",
-    body:JSON.stringify({key:API_KEY,action,...payload})
+    body:JSON.stringify({
+      key:API_KEY,
+      action,
+      ...payload
+    })
   });
+
   const data=await res.json();
-  if(!data.ok) throw new Error(data.error||"API Fehler");
+
+  if(!data.ok){
+    throw new Error(data.error||"API Fehler");
+  }
+
   return data;
 }
 
@@ -201,7 +214,9 @@ function countOpen(slots){
 
 function highestFilled(slots){
   for(let i=slots.length-1;i>=0;i--){
-    if(Number(slots[i])>0) return i;
+    if(Number(slots[i])>0){
+      return i;
+    }
   }
   return -1;
 }
@@ -212,10 +227,16 @@ function nextFree(slots){
 
 async function setupSheet(){
   const res=await api("getRange",{range:"A1:W4"});
-  if(res.values?.[0]?.[0]) return;
+
+  if(res.values?.[0]?.[0]){
+    return;
+  }
 
   const headers=["Name","Punkte","Unclaimed"];
-  for(let i=1;i<=20;i++) headers.push("U"+i);
+
+  for(let i=1;i<=20;i++){
+    headers.push("U"+i);
+  }
 
   await api("setRange",{
     range:"A1:W4",
@@ -230,11 +251,16 @@ async function setupSheet(){
 
 async function setupRewardHeader(){
   const res=await api("getRange",{range:"A10:J10"});
-  if(res.values?.[0]?.[0]) return;
+
+  if(res.values?.[0]?.[0]){
+    return;
+  }
 
   await api("setRange",{
     range:"A10:J10",
-    values:[["RewardID","Titel","Zielpunkte","Bild1","Bild2","Bild3","Aktiv","Luna","Milo","Finn"]]
+    values:[
+      ["RewardID","Titel","Zielpunkte","Bild1","Bild2","Bild3","Aktiv","Luna","Milo","Finn"]
+    ]
   });
 }
 
@@ -251,7 +277,11 @@ function unlock(){
   }
 
   const child=Object.keys(kidsConfig).find(k=>kidsConfig[k].pin===pin);
-  if(!child){alert("Falsche PIN");return;}
+
+  if(!child){
+    alert("Falsche PIN");
+    return;
+  }
 
   unlockedChild=child;
   localStorage.setItem("unlockedChild",child);
@@ -277,8 +307,10 @@ async function loadAll(){
 
 async function loadKids(){
   const res=await api("getRange",{range:"A2:W4"});
+
   kidsData=res.values.map(row=>{
     const slots=row.slice(3,23).map(v=>Number(v)||0);
+
     return{
       name:row[0],
       points:Number(row[1])||0,
@@ -287,12 +319,17 @@ async function loadKids(){
     };
   });
 
-  const updates=kidsData.map(k=>({
-    cell:`C${kidsConfig[k.name].row}`,
-    value:k.unclaimed
-  }));
+  const updates=kidsData
+    .filter(k=>kidsConfig[k.name])
+    .map(k=>({
+      cell:`C${kidsConfig[k.name].row}`,
+      value:k.unclaimed
+    }));
 
-  await api("setMany",{data:updates});
+  if(updates.length){
+    await api("setMany",{data:updates});
+  }
+
   renderKids();
 }
 
@@ -319,9 +356,13 @@ function renderKids(){
   kidsContainer.innerHTML="";
 
   kidsData.forEach(k=>{
-    if(!kidsConfig[k.name]) return;
+    if(!kidsConfig[k.name]){
+      return;
+    }
 
     const percent=Math.min((k.points/maxPoints)*100,100);
+    const width=percent>0?Math.max(percent,8):0;
+
     const card=document.createElement("div");
     card.className=`card ${kidsConfig[k.name].className}`;
 
@@ -339,7 +380,7 @@ function renderKids(){
       </div>
 
       <div class="bar-bg">
-        <div class="bar" style="width:${percent}%">${Math.round(percent)}%</div>
+        <div class="bar" style="width:${width}%">${Math.round(percent)}%</div>
       </div>
 
       <div class="info">${k.unclaimed} Belohnungen offen</div>
@@ -350,7 +391,9 @@ function renderKids(){
 }
 
 async function claimLoot(name){
-  if(unlockedChild!==name) return;
+  if(unlockedChild!==name){
+    return;
+  }
 
   const row=kidsConfig[name].row;
   const res=await api("getRange",{range:`A${row}:W${row}`});
@@ -360,7 +403,9 @@ async function claimLoot(name){
   const slots=rv.slice(3,23).map(v=>Number(v)||0);
   const index=highestFilled(slots);
 
-  if(index===-1) return;
+  if(index===-1){
+    return;
+  }
 
   const reward=slots[index];
   slots[index]=0;
@@ -375,10 +420,14 @@ async function claimLoot(name){
 
   const overlay=document.getElementById("lootOverlay");
   const text=document.getElementById("lootText");
+
   text.innerHTML=`+${reward} Punkte!<br><small>${countOpen(slots)} Belohnungen übrig</small>`;
   overlay.style.display="flex";
 
-  setTimeout(()=>overlay.style.display="none",1600);
+  setTimeout(()=>{
+    overlay.style.display="none";
+  },1600);
+
   await loadKids();
 }
 
@@ -386,8 +435,15 @@ async function changeLoot(direction){
   const selected=[...document.querySelectorAll('input[name="child"]:checked')].map(i=>i.value);
   const amount=Math.abs(Number(document.getElementById("lootAmount").value))||0;
 
-  if(!selected.length){alert("Kind auswählen");return;}
-  if(amount<=0){alert("Punkte eingeben");return;}
+  if(!selected.length){
+    alert("Kind auswählen");
+    return;
+  }
+
+  if(amount<=0){
+    alert("Punkte eingeben");
+    return;
+  }
 
   const updates=[];
   const messages=[];
@@ -399,30 +455,48 @@ async function changeLoot(direction){
 
     if(direction>0){
       const free=nextFree(slots);
-      if(free===-1){messages.push(`${name}: keine freien Slots`);continue;}
+
+      if(free===-1){
+        messages.push(`${name}: keine freien Slots`);
+        continue;
+      }
+
       slots[free]=amount;
       updates.push({cell:lootCell(row,free),value:amount});
       messages.push(`${name}: +${amount} in U${free+1}`);
     }else{
       let rest=amount;
+
       for(let i=lootSlots-1;i>=0;i--){
-        if(rest<=0) break;
+        if(rest<=0){
+          break;
+        }
+
         const old=slots[i];
-        if(old<=0) continue;
+
+        if(old<=0){
+          continue;
+        }
+
         const neu=Math.max(0,old-rest);
         rest-=old-neu;
         slots[i]=neu;
+
         updates.push({cell:lootCell(row,i),value:neu});
       }
+
       messages.push(`${name}: -${amount}`);
     }
 
     updates.push({cell:`C${row}`,value:countOpen(slots)});
   }
 
-  if(updates.length) await api("setMany",{data:updates});
+  if(updates.length){
+    await api("setMany",{data:updates});
+  }
 
   adminMessage.innerHTML=`<div class="success">${messages.join("<br>")}</div>`;
+
   await loadKids();
 }
 
@@ -439,6 +513,7 @@ function renderRewards(){
   active.forEach(r=>{
     const total=r.Luna+r.Milo+r.Finn;
     const percent=r.target>0?Math.min((total/r.target)*100,100):0;
+    const width=percent>0?Math.max(percent,8):0;
     const img=r.images.length?r.images[slideTick%r.images.length]:"";
 
     const card=document.createElement("div");
@@ -451,10 +526,11 @@ function renderRewards(){
         <div class="reward-title">${r.title}</div>
 
         <div class="bar-bg">
-          <div class="bar" style="width:${percent}%">${Math.round(percent)}%</div>
+          <div class="bar" style="width:${width}%">${Math.round(percent)}%</div>
         </div>
 
         <div class="reward-small">${total} / ${r.target} Punkte</div>
+
         <div class="reward-small">
           Luna: ${r.Luna} · Milo: ${r.Milo} · Finn: ${r.Finn}
         </div>
@@ -472,7 +548,9 @@ function renderRewards(){
 }
 
 async function donateToReward(row){
-  if(!unlockedChild || unlockedChild==="ADMIN") return;
+  if(!unlockedChild || unlockedChild==="ADMIN"){
+    return;
+  }
 
   const child=kidsConfig[unlockedChild];
   const kid=kidsData.find(k=>k.name===unlockedChild);
@@ -483,7 +561,10 @@ async function donateToReward(row){
   }
 
   const reward=rewardsData.find(r=>r.row===row);
-  if(!reward) return;
+
+  if(!reward){
+    return;
+  }
 
   const newKidPoints=kid.points-donateAmount;
   const contributionCell=`${child.contributionCol}${row}`;
@@ -508,6 +589,7 @@ function renderRewardAdmin(){
   });
 
   const info=document.getElementById("rewardAdminInfo");
+
   if(!rewardsData.length){
     info.innerHTML="Noch keine Belohnungen.";
     return;
@@ -550,13 +632,21 @@ async function saveReward(){
   const img2=document.getElementById("rewardImg2").value.trim();
   const img3=document.getElementById("rewardImg3").value.trim();
 
-  if(!title){alert("Titel fehlt");return;}
-  if(target<=0){alert("Zielpunkte fehlen");return;}
+  if(!title){
+    alert("Titel fehlt");
+    return;
+  }
+
+  if(target<=0){
+    alert("Zielpunkte fehlen");
+    return;
+  }
 
   let row=selectedRow;
 
   if(!row){
     const usedRows=rewardsData.map(r=>r.row);
+
     for(let r=rewardsStartRow;r<=rewardsEndRow;r++){
       if(!usedRows.includes(r)){
         row=r;
@@ -582,12 +672,17 @@ async function saveReward(){
   });
 
   await loadRewards();
+
   alert("Belohnung gespeichert");
 }
 
 async function deactivateReward(){
   const row=Number(document.getElementById("rewardSelect").value);
-  if(!row){alert("Belohnung auswählen");return;}
+
+  if(!row){
+    alert("Belohnung auswählen");
+    return;
+  }
 
   await api("set",{
     cell:`G${row}`,
