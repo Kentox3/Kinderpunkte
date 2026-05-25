@@ -5,10 +5,6 @@ import {
   lootSlots
 } from "./config.js";
 
-/* =========================================
-   KIDS = Sheet 1
-========================================= */
-
 export async function setupSheet() {
   const res = await api("getRange", {
     sheet: SHEETS.kids,
@@ -35,10 +31,6 @@ export async function setupSheet() {
     values: [headers]
   });
 }
-
-/* =========================================
-   REWARDS = Sheet 2
-========================================= */
 
 export async function setupRewards() {
   const res = await api("getRange", {
@@ -69,10 +61,6 @@ export async function setupRewards() {
   });
 }
 
-/* =========================================
-   STREAKS = Sheet 3
-========================================= */
-
 export async function setupStreaks() {
   const res = await api("getRange", {
     sheet: SHEETS.streaks,
@@ -94,21 +82,17 @@ export async function setupStreaks() {
       "Aktuell",
       "Ziel",
       "LootProKlick",
-      "BonusLoot",
+      "BonusDirekt",
       "Aktiv",
       "Abgeschlossen"
     ]]
   });
 }
 
-/* =========================================
-   PURCHASES = Sheet 4
-========================================= */
-
 export async function setupPurchases() {
   const res = await api("getRange", {
     sheet: SHEETS.purchases,
-    range: "A1:J1"
+    range: "A1:H1"
   });
 
   if (res.values?.[0]?.[0] === "PurchaseID") {
@@ -117,17 +101,15 @@ export async function setupPurchases() {
 
   await api("setRange", {
     sheet: SHEETS.purchases,
-    range: "A1:J1",
+    range: "A1:H1",
     values: [[
       "PurchaseID",
-      "RewardID",
-      "RewardTitel",
       "Kind",
+      "Reward",
       "Kosten",
       "Status",
       "GekauftAm",
       "BestätigtAm",
-      "Bild",
       "Notiz"
     ]]
   });
