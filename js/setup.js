@@ -38,20 +38,43 @@ export async function setupRewards() {
 
   await api("setRange", {
     range: "A10:K10",
-    values: [
-      [
-        "RewardID",
-        "Titel",
-        "Zielpunkte",
-        "Bild1",
-        "Bild2",
-        "Bild3",
-        "Aktiv",
-        "SichtbarFür",
-        "Luna",
-        "Milo",
-        "Finn"
-      ]
-    ]
+    values: [[
+      "RewardID",
+      "Titel",
+      "Zielpunkte",
+      "Bild1",
+      "Bild2",
+      "Bild3",
+      "Aktiv",
+      "SichtbarFür",
+      "Luna",
+      "Milo",
+      "Finn"
+    ]]
+  });
+}
+
+export async function setupStreaks() {
+  const res = await api("getRange", {
+    range: "M10:U10"
+  });
+
+  if (res.values?.[0]?.[0]) {
+    return;
+  }
+
+  await api("setRange", {
+    range: "M10:U10",
+    values: [[
+      "StreakID",
+      "Kind",
+      "Titel",
+      "Emoji",
+      "Aktuell",
+      "Ziel",
+      "PunkteProKlick",
+      "BonusBeiAbschluss",
+      "Aktiv"
+    ]]
   });
 }
