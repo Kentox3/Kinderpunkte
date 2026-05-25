@@ -1,17 +1,19 @@
 import { api } from "./api.js";
 
 import {
+  SHEETS,
   kidsConfig,
+  firstLootColumn,
+  lootSlots,
   maxPoints
 } from "./config.js";
 
 import { state } from "./state.js";
 
 import {
-  countOpen,
-  highestFilled,
+  safeNumber,
   lootCell,
-  safeNumber
+  countOpen
 } from "./utils.js";
 
 import {
@@ -20,214 +22,347 @@ import {
   openChildAdmin
 } from "./streaks.js";
 
-export async function loadKids() {
-  const res = await api("getRange", {
-    range: "A2:W4"
-  });
+import {
+  renderPurchaseNoticeForChild
+} from "./purchases.js";
 
-  state.kidsData = res.values
-    .map(row => {
-      const slots = row
-        .slice(3, 23)
-        .map(value => safeNumber(value));
+export async function loadKids() {
+
+  const res = await api(
+    "getRange",
+    {
+      sheet: SHEETS.kids,
+      range: "A2:W4"
+    }
+  );
+
+  state.kidsData = (res.values || [])
+    .map((row, index) => {
+
+      const name = row[0];
+
+      if (!name) {
+        return null;
+      }
+
+      const slots =
+        row
+          .slice(3, 3 + lootSlots)
+          .map(safeNumber);
 
       return {
-        name: row[0],
-        points: safeNumber(row[1]),
-        unclaimed: countOpen(slots),
-        slots
+
+        row: index + 2,
+
+        name,
+
+        points:
+          safeNumber(row[1]),
+
+        unclaimed:
+          safeNumber(row[2]),
+
+        slots,
+
+        className:
+          kidsConfig[name]?.className || ""
+
       };
+
     })
-    .filter(kid => kidsConfig[kid.name]);
-
-  const updates = state.kidsData.map(kid => ({
-    cell: `C${kidsConfig[kid.name].row}`,
-    value: kid.unclaimed
-  }));
-
-  if (updates.length) {
-    await api("setMany", {
-      data: updates
-    });
-  }
+    .filter(Boolean);
 
   renderKids();
+
 }
 
 export function renderKids() {
-  const kidsContainer = document.getElementById("kidsContainer");
-  kidsContainer.innerHTML = "";
 
-  state.kidsData.forEach(kid => {
-    const percent = Math.min(
-      (kid.points / maxPoints) * 100,
-      100
+  const container =
+    document.getElementById(
+      "kidsContainer"
     );
 
-    const width =
-      percent > 0
-        ? Math.max(percent, 8)
-        : 0;
+  if (!container) {
+    return;
+  }
 
-    const streaks = getStreaksForChild(kid.name);
+  container.innerHTML =
+    state.kidsData
+      .map(renderKidCard)
+      .join("");
 
-    const streakHtml = streaks.length
-      ? streaks.map(streak => `
-          <div class="info">
-            ${streak.emoji}
-            <b>${streak.title}</b><br>
-            ${renderStreakDots(streak)}
-          </div>
-        `).join("")
-      : "";
+  bindLootButtons();
 
-    const card = document.createElement("div");
+}
 
-    card.className =
-      `card ${kidsConfig[kid.name].className}`;
+function renderKidCard(kid) {
 
-    card.innerHTML = `
+  const percent =
+    Math.min(
+      100,
+      (kid.points / maxPoints) * 100
+    );
+
+  const streaks =
+    getStreaksForChild(
+      kid.name
+    );
+
+  return `
+
+    <div class="card ${kid.className}">
+
       <div class="top">
+
         <div class="name">
           ${kid.name}
-
-          ${
-            kid.unclaimed > 0 &&
-            state.unlockedChild === kid.name
-
-              ? `
-                <button
-                  class="chest-button"
-                  data-claim="${kid.name}"
-                >
-                  ⭐
-                </button>
-              `
-              : ""
-          }
         </div>
 
         <div class="points">
-          ${kid.points} Punkte
+          ⭐ ${kid.points}
         </div>
+
       </div>
 
       <div class="bar-bg">
         <div
           class="bar"
-          style="width:${width}%"
+          style="
+            width:${percent}%
+          "
         >
-          ${Math.round(percent)}%
+          ${kid.points}
         </div>
       </div>
 
       <div class="info">
-        ${kid.unclaimed} Belohnungen offen
+
+        🎁 Offen:
+        ${kid.unclaimed}
+
       </div>
 
-      ${streakHtml}
+      ${
+        renderPurchaseNoticeForChild(
+          kid.name
+        )
+      }
 
       ${
-        state.unlockedChild === "ADMIN"
+        streaks.length
           ? `
-            <button
-              class="save"
-              data-manage-child="${kid.name}"
-            >
-              ⚙ ${kid.name} verwalten
-            </button>
+            <hr>
+
+            ${streaks.map(streak => `
+
+              <div class="info">
+
+                <b>
+                  ${streak.emoji}
+                  ${streak.title}
+                </b>
+
+                <br>
+
+                ${renderStreakDots(streak)}
+
+                <br>
+
+                ${streak.current}
+                /
+                ${streak.goal}
+
+              </div>
+
+            `).join("")}
           `
           : ""
       }
-    `;
 
-    kidsContainer.appendChild(card);
-  });
+      <div
+        class="reward-controls"
+      >
 
-  document
-    .querySelectorAll("[data-claim]")
-    .forEach(button => {
-      button.addEventListener("click", () => {
-        claimLoot(button.dataset.claim);
-      });
-    });
+        <button
+          class="chest-button open"
+          data-open-loot="${kid.name}"
+          ${
+            kid.unclaimed <= 0
+              ? "disabled"
+              : ""
+          }
+        >
+          🎁 Öffnen
+        </button>
 
-  document
-    .querySelectorAll("[data-manage-child]")
-    .forEach(button => {
-      button.addEventListener("click", () => {
-        openChildAdmin(button.dataset.manageChild);
-      });
-    });
-}
+        ${
+          state.unlockedChild === "ADMIN"
+            ? `
+              <button
+                class="save"
+                data-open-admin-child="${kid.name}"
+              >
+                ⚙️ Verwalten
+              </button>
+            `
+            : ""
+        }
 
-export async function claimLoot(name) {
-  if (state.unlockedChild !== name) {
-    return;
-  }
+      </div>
 
-  const row = kidsConfig[name].row;
+    </div>
 
-  const res = await api("getRange", {
-    range: `A${row}:W${row}`
-  });
-
-  const rowValues = res.values[0] || [];
-
-  const freshPoints = await api("get", {
-    cell: `B${row}`
-  });
-
-  const currentPoints = safeNumber(freshPoints.value);
-
-  const slots = rowValues
-    .slice(3, 23)
-    .map(value => safeNumber(value));
-
-  const slotIndex = highestFilled(slots);
-
-  if (slotIndex === -1) {
-    return;
-  }
-
-  const reward = safeNumber(slots[slotIndex]);
-
-  slots[slotIndex] = 0;
-
-  await api("setMany", {
-    data: [
-      {
-        cell: `B${row}`,
-        value: currentPoints + reward
-      },
-      {
-        cell: `C${row}`,
-        value: countOpen(slots)
-      },
-      {
-        cell: lootCell(row, slotIndex),
-        value: 0
-      }
-    ]
-  });
-
-  const overlay = document.getElementById("lootOverlay");
-  const text = document.getElementById("lootText");
-
-  text.innerHTML = `
-    +${reward} Punkte
-    <br>
-    <small>
-      ${countOpen(slots)}
-      Belohnungen übrig
-    </small>
   `;
 
-  overlay.classList.add("visible");
+}
 
-  setTimeout(() => {
-    overlay.classList.remove("visible");
-  }, 1500);
+function bindLootButtons() {
+
+  document
+    .querySelectorAll(
+      "[data-open-loot]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          openLoot(
+            button.dataset.openLoot
+          );
+
+        }
+      );
+
+    });
+
+  document
+    .querySelectorAll(
+      "[data-open-admin-child]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          openChildAdmin(
+            button.dataset.openAdminChild
+          );
+
+        }
+      );
+
+    });
+
+}
+
+async function openLoot(child) {
+
+  const kid =
+    state.kidsData.find(
+      k => k.name === child
+    );
+
+  if (!kid) {
+    return;
+  }
+
+  const index =
+    [...kid.slots]
+      .reverse()
+      .findIndex(
+        value => value > 0
+      );
+
+  if (index === -1) {
+    return;
+  }
+
+  const realIndex =
+    kid.slots.length - 1 - index;
+
+  const reward =
+    kid.slots[realIndex];
+
+  const newPoints =
+    kid.points + reward;
+
+  const slots =
+    [...kid.slots];
+
+  slots[realIndex] = 0;
+
+  await api(
+    "setMany",
+    {
+      sheet: SHEETS.kids,
+
+      data: [
+
+        {
+          cell: `B${kid.row}`,
+          value: newPoints
+        },
+
+        {
+          cell: `C${kid.row}`,
+          value: countOpen(slots)
+        },
+
+        {
+          cell:
+            lootCell(
+              kid.row,
+              realIndex
+            ),
+          value: 0
+        }
+
+      ]
+
+    }
+  );
+
+  showRewardOverlay(reward);
 
   await loadKids();
+
+}
+
+function showRewardOverlay(
+  reward
+) {
+
+  const overlay =
+    document.getElementById(
+      "rewardOverlay"
+    );
+
+  const text =
+    document.getElementById(
+      "rewardOverlayText"
+    );
+
+  if (!overlay || !text) {
+    return;
+  }
+
+  text.textContent =
+    `+${reward} Punkte`;
+
+  overlay.classList.add(
+    "visible"
+  );
+
+  setTimeout(() => {
+
+    overlay.classList.remove(
+      "visible"
+    );
+
+  }, 2200);
+
 }
