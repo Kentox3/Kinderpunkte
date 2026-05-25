@@ -9,6 +9,7 @@ export const state = {
   selectedAdminChild: null,
 
   slideTick: 0,
-  rewardCooldown: false,
-  isSaving: false
+
+  isSaving: false,
+  rewardCooldown: false
 };
