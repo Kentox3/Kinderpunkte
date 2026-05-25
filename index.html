@@ -3,12 +3,12 @@
 
 <head>
 
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
 
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
-  >
+  />
 
   <title>
     Kinderpunkte
@@ -17,7 +17,7 @@
   <link
     rel="stylesheet"
     href="css/style.css"
-  >
+  />
 
 </head>
 
@@ -33,39 +33,28 @@
 
     <!-- KIDS -->
 
-    <section>
-
-      <div id="kidsContainer">
-
-        <div class="loading">
-          Lade Kinder...
-        </div>
-
-      </div>
-
-    </section>
+    <div id="kidsContainer"></div>
 
     <!-- REWARDS -->
 
-    <section>
+    <h2>
+      🎁 Belohnungen
+    </h2>
 
-      <h2>
-        Belohnungen
-      </h2>
-
-      <div id="rewardsContainer">
-
-        <div class="loading">
-          Lade Belohnungen...
-        </div>
-
-      </div>
-
-    </section>
+    <div id="rewardsContainer"></div>
 
     <!-- ADMIN -->
 
-    <section id="adminMount"></section>
+    <div id="adminMount"></div>
+
+    <!-- LOGOUT -->
+
+    <button
+      id="logoutButton"
+      class="minus logout-bottom"
+    >
+      🚪 Logout
+    </button>
 
   </main>
 
@@ -78,31 +67,15 @@
 
     <div class="card">
 
-      <h2>
-        🎉 Belohnung
-      </h2>
-
-      <div
-        id="rewardOverlayText"
-        class="name"
-      >
-        +0 Punkte
+      <div id="rewardOverlayText">
+        🎁
       </div>
 
     </div>
 
   </div>
 
-  <!-- LOGOUT -->
-
-  <button
-    id="logoutButton"
-    class="logout-bottom minus"
-  >
-    Logout
-  </button>
-
-  <!-- SCRIPTS -->
+  <!-- JS -->
 
   <script
     type="module"
