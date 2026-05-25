@@ -32,5 +32,5 @@ export const lootSlots = 20;
 export const rewardsStartRow = 11;
 export const rewardsEndRow = 40;
 
-export const streaksStartRow = 50;
+export const streaksStartRow = 10;
 export const streaksEndRow = 100;
