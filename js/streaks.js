@@ -1,6 +1,7 @@
 import { api } from "./api.js";
 
 import {
+  SHEETS,
   kidsConfig,
   streaksStartRow,
   streaksEndRow
@@ -14,19 +15,17 @@ import {
   countOpen
 } from "./utils.js";
 
-async function refreshKids() {
-  const module = await import("./kids.js");
-  await module.loadKids();
-}
+import { loadKids } from "./kids.js";
 
 export async function loadStreaks() {
   const res = await api("getRange", {
-    range: `O${streaksStartRow}:X${streaksEndRow}`
+    sheet: SHEETS.streaks,
+    range: `A${streaksStartRow}:J${streaksEndRow}`
   });
 
   state.streaksData = (res.values || [])
-    .map((row, i) => ({
-      row: streaksStartRow + i,
+    .map((row, index) => ({
+      row: streaksStartRow + index,
       id: row[0],
       child: row[1],
       title: row[2],
@@ -146,9 +145,7 @@ function renderChildAdminStreaks() {
     .querySelectorAll("[data-streak-plus]")
     .forEach(button => {
       button.addEventListener("click", () => {
-        increaseStreak(
-          Number(button.dataset.streakPlus)
-        );
+        increaseStreak(Number(button.dataset.streakPlus));
       });
     });
 }
@@ -158,18 +155,13 @@ async function addLootToChild(child, amount) {
     return true;
   }
 
-  const row = kidsConfig[child]?.row;
+  const kid = state.kidsData.find(k => k.name === child);
 
-  if (!row) {
+  if (!kid) {
     return false;
   }
 
-  const res = await api("getRange", {
-    range: `D${row}:W${row}`
-  });
-
-  const slots = (res.values?.[0] || [])
-    .map(value => safeNumber(value));
+  const slots = [...kid.slots];
 
   const free = slots.findIndex(value => value <= 0);
 
@@ -180,13 +172,14 @@ async function addLootToChild(child, amount) {
   slots[free] = amount;
 
   await api("setMany", {
+    sheet: SHEETS.kids,
     data: [
       {
-        cell: lootCell(row, free),
+        cell: lootCell(kid.row, free),
         value: amount
       },
       {
-        cell: `C${row}`,
+        cell: `C${kid.row}`,
         value: countOpen(slots)
       }
     ]
@@ -215,7 +208,7 @@ async function addLootForSelectedChild() {
     return;
   }
 
-  await refreshKids();
+  await loadKids();
 
   alert(`${child}: +${amount} Loot erstellt.`);
 }
@@ -264,7 +257,8 @@ async function saveStreak() {
   }
 
   await api("setRange", {
-    range: `O${row}:X${row}`,
+    sheet: SHEETS.streaks,
+    range: `A${row}:J${row}`,
     values: [[
       `S${Date.now()}`,
       child,
@@ -326,19 +320,20 @@ async function increaseStreak(row) {
   }
 
   await api("setMany", {
+    sheet: SHEETS.streaks,
     data: [
       {
-        cell: `S${row}`,
+        cell: `E${row}`,
         value: nextCurrent
       },
       {
-        cell: `X${row}`,
+        cell: `J${row}`,
         value: completed
       }
     ]
   });
 
-  await refreshKids();
+  await loadKids();
   await loadStreaks();
 
   renderChildAdminStreaks();
