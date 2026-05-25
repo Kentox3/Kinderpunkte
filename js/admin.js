@@ -53,7 +53,9 @@ async function giveAdminLoot() {
   }
 
   const slots = [...kid.slots];
-  const free = slots.findIndex(value => value <= 0);
+
+  const free =
+    slots.findIndex(value => value <= 0);
 
   if (free === -1) {
     alert("Keine freien Loot-Slots.");
@@ -128,7 +130,7 @@ export async function saveReward() {
 
   await api("setRange", {
     sheet: SHEETS.rewards,
-    range: `A${row}:K${row}`,
+    range: `A${row}:N${row}`,
     values: [[
       `R${Date.now()}`,
       title,
@@ -140,7 +142,10 @@ export async function saveReward() {
       visibleFor,
       0,
       0,
-      0
+      0,
+      false,
+      false,
+      false
     ]]
   });
 
