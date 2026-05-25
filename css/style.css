@@ -42,6 +42,15 @@ h3 {
   font-weight: 800;
 }
 
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 24px;
+}
+
+h2 {
+  margin-bottom: 16px;
+}
+
 .loading {
   opacity: .7;
 }
@@ -351,13 +360,17 @@ input::placeholder {
   background:
     rgba(0,0,0,.78);
 
-  display: flex;
+  display: none;
 
   align-items: center;
 
   justify-content: center;
 
   z-index: 1000;
+}
+
+#loginOverlay.visible {
+  display: flex;
 }
 
 .login-box {
