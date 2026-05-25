@@ -41,7 +41,7 @@ export function renderStreakDots(streak) {
   let html = "";
 
   for (let i = 1; i <= streak.goal; i++) {
-    html += i <= streak.current ? "🟢" : "⚫";
+    html += i <= streak.current ? "🌟" : "⚫";
   }
 
   return html;
