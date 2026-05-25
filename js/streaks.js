@@ -10,6 +10,11 @@ import { state } from "./state.js";
 
 import { loadKids } from "./kids.js";
 
+import {
+  safeNumber,
+  lootCell
+} from "./utils.js";
+
 export async function loadStreaks() {
   const res = await api("getRange", {
     range: `M${streaksStartRow}:U${streaksEndRow}`
@@ -22,18 +27,22 @@ export async function loadStreaks() {
       child: row[1],
       title: row[2],
       emoji: row[3],
-      current: Number(row[4]) || 0,
-      goal: Number(row[5]) || 0,
-      pointsPerClick: Number(row[6]) || 0,
-      bonus: Number(row[7]) || 0,
-      active: String(row[8]).toUpperCase() !== "FALSE" && !!row[2]
+      current: safeNumber(row[4]),
+      goal: safeNumber(row[5]),
+      pointsPerClick: safeNumber(row[6]),
+      bonus: safeNumber(row[7]),
+      active:
+        String(row[8]).toUpperCase() !== "FALSE" &&
+        !!row[2]
     }))
     .filter(streak => streak.title);
 }
 
 export function getStreaksForChild(child) {
   return state.streaksData.filter(
-    streak => streak.active && streak.child === child
+    streak =>
+      streak.active &&
+      streak.child === child
   );
 }
 
@@ -41,7 +50,7 @@ export function renderStreakDots(streak) {
   let html = "";
 
   for (let i = 1; i <= streak.goal; i++) {
-    html += i <= streak.current ? "🌟" : "⚫";
+    html += i <= streak.current ? "🟢" : "⚫";
   }
 
   return html;
@@ -93,7 +102,12 @@ function renderChildAdminStreaks() {
   const streaks = getStreaksForChild(child);
 
   if (!streaks.length) {
-    box.innerHTML = `<div class="loading">Keine Streaks vorhanden.</div>`;
+    box.innerHTML = `
+      <div class="loading">
+        Keine Streaks vorhanden.
+      </div>
+    `;
+
     return;
   }
 
@@ -131,8 +145,10 @@ function renderChildAdminStreaks() {
 
 async function addLootForSelectedChild() {
   const child = state.selectedAdminChild;
-  const amount =
-    Number(document.getElementById("childLootAmount").value) || 0;
+
+  const amount = safeNumber(
+    document.getElementById("childLootAmount").value
+  );
 
   if (!child || amount <= 0) {
     alert("Loot-Wert fehlt.");
@@ -145,8 +161,8 @@ async function addLootForSelectedChild() {
     range: `D${row}:W${row}`
   });
 
-  const slots = res.values[0].map(v => Number(v) || 0);
-  const free = slots.findIndex(v => v <= 0);
+  const slots = res.values[0].map(value => safeNumber(value));
+  const free = slots.findIndex(value => value <= 0);
 
   if (free === -1) {
     alert("Keine freien Loot-Slots.");
@@ -163,7 +179,7 @@ async function addLootForSelectedChild() {
       },
       {
         cell: `C${row}`,
-        value: slots.filter(v => v > 0).length
+        value: slots.filter(value => value > 0).length
       }
     ]
   });
@@ -171,20 +187,6 @@ async function addLootForSelectedChild() {
   await loadKids();
 
   alert(`${child}: +${amount} Loot erstellt.`);
-}
-
-function lootCell(row, index) {
-  const columnNumber = 4 + index;
-  let letter = "";
-  let n = columnNumber;
-
-  while (n > 0) {
-    const r = (n - 1) % 26;
-    letter = String.fromCharCode(65 + r) + letter;
-    n = Math.floor((n - 1) / 26);
-  }
-
-  return `${letter}${row}`;
 }
 
 async function saveStreak() {
@@ -196,14 +198,17 @@ async function saveStreak() {
   const emoji =
     document.getElementById("streakEmoji").value.trim();
 
-  const goal =
-    Number(document.getElementById("streakGoal").value) || 0;
+  const goal = safeNumber(
+    document.getElementById("streakGoal").value
+  );
 
-  const points =
-    Number(document.getElementById("streakPoints").value) || 0;
+  const points = safeNumber(
+    document.getElementById("streakPoints").value
+  );
 
-  const bonus =
-    Number(document.getElementById("streakBonus").value) || 0;
+  const bonus = safeNumber(
+    document.getElementById("streakBonus").value
+  );
 
   if (!child || !title || !emoji || goal <= 0) {
     alert("Bitte Titel, Emoji und Ziel eintragen.");
@@ -261,12 +266,11 @@ async function increaseStreak(row) {
   const child = streak.child;
   const kidRow = kidsConfig[child].row;
 
-  const kidRes = await api("getRange", {
-    range: `B${kidRow}:B${kidRow}`
+  const freshKidPoints = await api("get", {
+    cell: `B${kidRow}`
   });
 
-  const currentPoints =
-    Number(kidRes.values[0][0]) || 0;
+  const currentPoints = safeNumber(freshKidPoints.value);
 
   let nextCurrent = streak.current + 1;
   let pointsToAdd = streak.pointsPerClick;
