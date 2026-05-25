@@ -35,7 +35,7 @@ export async function setupSheet() {
 export async function setupRewards() {
   const res = await api("getRange", {
     sheet: SHEETS.rewards,
-    range: "A1:K1"
+    range: "A1:N1"
   });
 
   if (res.values?.[0]?.[0] === "RewardID") {
@@ -44,7 +44,7 @@ export async function setupRewards() {
 
   await api("setRange", {
     sheet: SHEETS.rewards,
-    range: "A1:K1",
+    range: "A1:N1",
     values: [[
       "RewardID",
       "Titel",
@@ -56,7 +56,10 @@ export async function setupRewards() {
       "SichtbarFür",
       "Luna",
       "Milo",
-      "Finn"
+      "Finn",
+      "LunaReady",
+      "MiloReady",
+      "FinnReady"
     ]]
   });
 }
