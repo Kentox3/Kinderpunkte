@@ -10,7 +10,8 @@ import { state } from "./state.js";
 import {
   countOpen,
   highestFilled,
-  lootCell
+  lootCell,
+  safeNumber
 } from "./utils.js";
 
 import {
@@ -28,20 +29,20 @@ export async function loadKids() {
     .map(row => {
       const slots = row
         .slice(3, 23)
-        .map(v => Number(v) || 0);
+        .map(value => safeNumber(value));
 
       return {
         name: row[0],
-        points: Number(row[1]) || 0,
+        points: safeNumber(row[1]),
         unclaimed: countOpen(slots),
         slots
       };
     })
-    .filter(k => kidsConfig[k.name]);
+    .filter(kid => kidsConfig[kid.name]);
 
-  const updates = state.kidsData.map(k => ({
-    cell: `C${kidsConfig[k.name].row}`,
-    value: k.unclaimed
+  const updates = state.kidsData.map(kid => ({
+    cell: `C${kidsConfig[kid.name].row}`,
+    value: kid.unclaimed
   }));
 
   if (updates.length) {
@@ -54,9 +55,7 @@ export async function loadKids() {
 }
 
 export function renderKids() {
-  const kidsContainer =
-    document.getElementById("kidsContainer");
-
+  const kidsContainer = document.getElementById("kidsContainer");
   kidsContainer.innerHTML = "";
 
   state.kidsData.forEach(kid => {
@@ -70,8 +69,7 @@ export function renderKids() {
         ? Math.max(percent, 8)
         : 0;
 
-    const streaks =
-      getStreaksForChild(kid.name);
+    const streaks = getStreaksForChild(kid.name);
 
     const streakHtml = streaks.length
       ? streaks.map(streak => `
@@ -83,8 +81,7 @@ export function renderKids() {
         `).join("")
       : "";
 
-    const card =
-      document.createElement("div");
+    const card = document.createElement("div");
 
     card.className =
       `card ${kidsConfig[kid.name].className}`;
@@ -97,6 +94,7 @@ export function renderKids() {
           ${
             kid.unclaimed > 0 &&
             state.unlockedChild === kid.name
+
               ? `
                 <button
                   class="chest-button"
@@ -175,22 +173,24 @@ export async function claimLoot(name) {
   });
 
   const rowValues = res.values[0] || [];
-  const currentPoints =
-    Number(rowValues[1]) || 0;
+
+  const freshPoints = await api("get", {
+    cell: `B${row}`
+  });
+
+  const currentPoints = safeNumber(freshPoints.value);
 
   const slots = rowValues
     .slice(3, 23)
-    .map(v => Number(v) || 0);
+    .map(value => safeNumber(value));
 
-  const slotIndex =
-    highestFilled(slots);
+  const slotIndex = highestFilled(slots);
 
   if (slotIndex === -1) {
     return;
   }
 
-  const reward =
-    slots[slotIndex];
+  const reward = safeNumber(slots[slotIndex]);
 
   slots[slotIndex] = 0;
 
@@ -211,11 +211,8 @@ export async function claimLoot(name) {
     ]
   });
 
-  const overlay =
-    document.getElementById("lootOverlay");
-
-  const text =
-    document.getElementById("lootText");
+  const overlay = document.getElementById("lootOverlay");
+  const text = document.getElementById("lootText");
 
   text.innerHTML = `
     +${reward} Punkte
