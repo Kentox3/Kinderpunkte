@@ -1,9 +1,61 @@
-<!-- Login Page -->
-<div class="login-container">
-  <h1>Login</h1>
-  <form id="loginForm">
-    <input type="email" placeholder="Email" required>
-    <input type="password" placeholder="Passwort" required>
-    <button type="submit">Anmelden</button>
-  </form>
+<div
+  id="loginOverlay"
+  class="reward-overlay visible"
+>
+
+  <div
+    class="admin-panel visible"
+    style="
+      max-width:360px;
+      width:90%;
+    "
+  >
+
+    <h2>
+      ⭐ Login
+    </h2>
+
+    <div class="admin-grid">
+
+      <input
+        id="pinInput"
+        type="password"
+        inputmode="numeric"
+        placeholder="PIN eingeben"
+      >
+
+      <button
+        class="open"
+        id="loginButton"
+      >
+        Einloggen
+      </button>
+
+      <button
+        class="save"
+        id="guestButton"
+      >
+        Gastmodus
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div
+  id="lootOverlay"
+  class="reward-overlay"
+>
+
+  <div class="big-star">
+    ⭐
+  </div>
+
+  <div
+    id="lootText"
+    class="reward-text"
+  ></div>
+
 </div>
