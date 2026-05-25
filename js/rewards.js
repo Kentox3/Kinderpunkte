@@ -11,18 +11,13 @@ import { state } from "./state.js";
 
 import { safeNumber } from "./utils.js";
 
-import {
-  createPurchase
-} from "./purchases.js";
-
-import {
-  loadKids
-} from "./kids.js";
+import { createPurchase } from "./purchases.js";
+import { loadKids } from "./kids.js";
 
 export async function loadRewards() {
   const res = await api("getRange", {
     sheet: SHEETS.rewards,
-    range: `A${rewardsStartRow}:K${rewardsEndRow}`
+    range: `A${rewardsStartRow}:N${rewardsEndRow}`
   });
 
   state.rewardsData = (res.values || [])
@@ -31,22 +26,25 @@ export async function loadRewards() {
       id: row[0],
       title: row[1],
       target: safeNumber(row[2]),
-      images: [
-        row[3],
-        row[4],
-        row[5]
-      ].filter(Boolean),
+      images: [row[3], row[4], row[5]].filter(Boolean),
       active:
         String(row[6]).toUpperCase() !== "FALSE" &&
         !!row[1],
       visibleFor: row[7] || "ALL",
       Luna: safeNumber(row[8]),
       Milo: safeNumber(row[9]),
-      Finn: safeNumber(row[10])
+      Finn: safeNumber(row[10]),
+      LunaReady: String(row[11]).toUpperCase() === "TRUE",
+      MiloReady: String(row[12]).toUpperCase() === "TRUE",
+      FinnReady: String(row[13]).toUpperCase() === "TRUE"
     }))
     .filter(reward => reward.title);
 
   renderRewards();
+}
+
+function isFamilyReward(reward) {
+  return reward.visibleFor === "ALL";
 }
 
 function canSeeReward(reward) {
@@ -54,23 +52,45 @@ function canSeeReward(reward) {
     return true;
   }
 
-  if (reward.visibleFor === "ALL") {
+  if (isFamilyReward(reward)) {
     return true;
   }
 
   return reward.visibleFor === state.unlockedChild;
 }
 
-function canUseRewardButtons(reward) {
-  if (
-    !state.unlockedChild ||
-    state.unlockedChild === "ADMIN" ||
-    state.unlockedChild === "GUEST"
-  ) {
+function isRealChild() {
+  return ["Luna", "Milo", "Finn"].includes(state.unlockedChild);
+}
+
+function totalRewardPoints(reward) {
+  return reward.Luna + reward.Milo + reward.Finn;
+}
+
+function childContribution(reward, child) {
+  return safeNumber(reward[child]);
+}
+
+function childReady(reward, child) {
+  return reward[`${child}Ready`] === true;
+}
+
+function contributorChildren(reward) {
+  return ["Luna", "Milo", "Finn"].filter(
+    child => childContribution(reward, child) > 0
+  );
+}
+
+function allContributorsReady(reward) {
+  const contributors = contributorChildren(reward);
+
+  if (!contributors.length) {
     return false;
   }
 
-  return canSeeReward(reward);
+  return contributors.every(
+    child => childReady(reward, child)
+  );
 }
 
 export function renderRewards() {
@@ -83,9 +103,7 @@ export function renderRewards() {
 
   const rewards =
     state.rewardsData.filter(
-      reward =>
-        reward.active &&
-        canSeeReward(reward)
+      reward => reward.active && canSeeReward(reward)
     );
 
   if (!rewards.length) {
@@ -104,18 +122,14 @@ export function renderRewards() {
 }
 
 function renderRewardCard(reward) {
-  const total =
-    reward.Luna +
-    reward.Milo +
-    reward.Finn;
+  const total = totalRewardPoints(reward);
 
   const percent =
     reward.target > 0
       ? Math.min(100, (total / reward.target) * 100)
       : 0;
 
-  const canBuy =
-    canUseRewardButtons(reward) &&
+  const ready =
     total >= reward.target;
 
   const image =
@@ -133,7 +147,7 @@ function renderRewardCard(reward) {
 
       <div>
         <div class="reward-title">
-          ${reward.title}
+          ${ready ? "🎉 " : ""}${reward.title}
         </div>
 
         <div class="bar-bg">
@@ -146,26 +160,23 @@ function renderRewardCard(reward) {
         </div>
 
         <div class="reward-small">
-          Luna: ${reward.Luna} ⭐<br>
-          Milo: ${reward.Milo} ⭐<br>
-          Finn: ${reward.Finn} ⭐
+          Luna: ${reward.Luna} ⭐ ${reward.LunaReady ? "✅" : ""}<br>
+          Milo: ${reward.Milo} ⭐ ${reward.MiloReady ? "✅" : ""}<br>
+          Finn: ${reward.Finn} ⭐ ${reward.FinnReady ? "✅" : ""}
         </div>
+
+        ${
+          ready
+            ? `
+              <div class="purchase-notice">
+                🎉 Ziel erreicht!
+              </div>
+            `
+            : ""
+        }
 
         <div class="reward-controls">
           ${renderRewardButtons(reward)}
-
-          ${
-            canBuy
-              ? `
-                <button
-                  class="save"
-                  data-buy-reward="${reward.row}"
-                >
-                  🎁 Kaufen
-                </button>
-              `
-              : ""
-          }
         </div>
       </div>
     </div>
@@ -173,10 +184,75 @@ function renderRewardCard(reward) {
 }
 
 function renderRewardButtons(reward) {
-  if (!canUseRewardButtons(reward)) {
+  if (!isRealChild()) {
     return "";
   }
 
+  if (!canSeeReward(reward)) {
+    return "";
+  }
+
+  const child = state.unlockedChild;
+  const total = totalRewardPoints(reward);
+  const ready = total >= reward.target;
+
+  if (isFamilyReward(reward)) {
+    const contributed =
+      childContribution(reward, child) > 0;
+
+    return `
+      ${
+        !ready
+          ? renderDonateButtons(reward)
+          : ""
+      }
+
+      ${
+        ready && contributed && !childReady(reward, child)
+          ? `
+            <button
+              class="save"
+              data-ready-reward="${reward.row}"
+            >
+              🎉 Kaufen bestätigen
+            </button>
+          `
+          : ""
+      }
+
+      ${
+        ready && contributed && childReady(reward, child)
+          ? `
+            <div class="purchase-notice">
+              ✅ Du hast bestätigt
+            </div>
+          `
+          : ""
+      }
+    `;
+  }
+
+  if (reward.visibleFor !== child) {
+    return "";
+  }
+
+  return `
+    ${
+      !ready
+        ? renderDonateButtons(reward)
+        : `
+          <button
+            class="save"
+            data-buy-reward="${reward.row}"
+          >
+            🎁 Kaufen
+          </button>
+        `
+    }
+  `;
+}
+
+function renderDonateButtons(reward) {
   return `
     <input
       type="number"
@@ -222,7 +298,15 @@ function bindRewardButtons() {
     .querySelectorAll("[data-buy-reward]")
     .forEach(button => {
       button.addEventListener("click", () => {
-        buyReward(Number(button.dataset.buyReward));
+        buyPrivateReward(Number(button.dataset.buyReward));
+      });
+    });
+
+  document
+    .querySelectorAll("[data-ready-reward]")
+    .forEach(button => {
+      button.addEventListener("click", () => {
+        confirmFamilyReward(Number(button.dataset.readyReward));
       });
     });
 }
@@ -236,15 +320,12 @@ async function donate(rewardRow) {
   startRewardCooldown();
 
   try {
-    const child =
-      state.unlockedChild;
+    const child = state.unlockedChild;
 
     const reward =
-      state.rewardsData.find(
-        r => r.row === rewardRow
-      );
+      state.rewardsData.find(r => r.row === rewardRow);
 
-    if (!reward || !canUseRewardButtons(reward)) {
+    if (!reward || !canSeeReward(reward)) {
       throw new Error("Diese Belohnung ist für dich nicht verfügbar.");
     }
 
@@ -309,15 +390,12 @@ async function withdraw(rewardRow) {
   startRewardCooldown();
 
   try {
-    const child =
-      state.unlockedChild;
+    const child = state.unlockedChild;
 
     const reward =
-      state.rewardsData.find(
-        r => r.row === rewardRow
-      );
+      state.rewardsData.find(r => r.row === rewardRow);
 
-    if (!reward || !canUseRewardButtons(reward)) {
+    if (!reward || !canSeeReward(reward)) {
       throw new Error("Diese Belohnung ist für dich nicht verfügbar.");
     }
 
@@ -351,6 +429,10 @@ async function withdraw(rewardRow) {
         {
           cell: `${col}${rewardRow}`,
           value: reward[child] - amount
+        },
+        {
+          cell: readyCell(child, rewardRow),
+          value: false
         }
       ]
     });
@@ -375,73 +457,162 @@ async function withdraw(rewardRow) {
   state.isSaving = false;
 }
 
-async function buyReward(rewardRow) {
-  if (state.isSaving || state.rewardCooldown) {
+async function buyPrivateReward(rewardRow) {
+  const reward =
+    state.rewardsData.find(r => r.row === rewardRow);
+
+  if (!reward) {
     return;
   }
 
-  state.isSaving = true;
-  startRewardCooldown();
+  await completeRewardPurchase(
+    reward,
+    state.unlockedChild
+  );
+}
 
-  try {
-    const reward =
-      state.rewardsData.find(
-        r => r.row === rewardRow
-      );
+async function confirmFamilyReward(rewardRow) {
+  const reward =
+    state.rewardsData.find(r => r.row === rewardRow);
 
-    if (!reward || !canUseRewardButtons(reward)) {
-      throw new Error("Diese Belohnung ist für dich nicht verfügbar.");
-    }
-
-    const total =
-      reward.Luna +
-      reward.Milo +
-      reward.Finn;
-
-    if (total < reward.target) {
-      throw new Error("Belohnung noch nicht voll.");
-    }
-
-    await createPurchase({
-      reward,
-      child: state.unlockedChild,
-      cost: reward.target
-    });
-
-    await api("setMany", {
-      sheet: SHEETS.rewards,
-      data: [
-        {
-          cell: `I${rewardRow}`,
-          value: 0
-        },
-        {
-          cell: `J${rewardRow}`,
-          value: 0
-        },
-        {
-          cell: `K${rewardRow}`,
-          value: 0
-        }
-      ]
-    });
-
-    await loadRewards();
-
-    alert("🎁 Belohnung gekauft! Bitte warte auf deine Belohnung.");
-
-  } catch (error) {
-    alert(error.message);
+  if (!reward) {
+    return;
   }
 
-  state.isSaving = false;
+  const child = state.unlockedChild;
+
+  if (childContribution(reward, child) <= 0) {
+    alert("Du hast nichts beigesteuert.");
+    return;
+  }
+
+  await api("setMany", {
+    sheet: SHEETS.rewards,
+    data: [
+      {
+        cell: readyCell(child, rewardRow),
+        value: true
+      }
+    ]
+  });
+
+  await loadRewards();
+
+  const updated =
+    state.rewardsData.find(r => r.row === rewardRow);
+
+  showRewardReachedOverlay(updated);
+
+  if (allContributorsReady(updated)) {
+    await completeRewardPurchase(
+      updated,
+      contributorChildren(updated).join(", ")
+    );
+  }
+}
+
+async function completeRewardPurchase(reward, buyer) {
+  const total = totalRewardPoints(reward);
+
+  if (total < reward.target) {
+    alert("Belohnung noch nicht voll.");
+    return;
+  }
+
+  await createPurchase({
+    reward,
+    child: buyer,
+    cost: reward.target
+  });
+
+  await api("setMany", {
+    sheet: SHEETS.rewards,
+    data: [
+      { cell: `I${reward.row}`, value: 0 },
+      { cell: `J${reward.row}`, value: 0 },
+      { cell: `K${reward.row}`, value: 0 },
+      { cell: `L${reward.row}`, value: false },
+      { cell: `M${reward.row}`, value: false },
+      { cell: `N${reward.row}`, value: false }
+    ]
+  });
+
+  showRewardBoughtOverlay(reward);
+
+  await loadRewards();
+}
+
+function readyCell(child, row) {
+  const map = {
+    Luna: "L",
+    Milo: "M",
+    Finn: "N"
+  };
+
+  return `${map[child]}${row}`;
+}
+
+function showRewardReachedOverlay(reward) {
+  showRewardOverlay(
+    reward,
+    "🎉 Geschafft!",
+    "Die Belohnung ist erreicht!"
+  );
+}
+
+function showRewardBoughtOverlay(reward) {
+  showRewardOverlay(
+    reward,
+    "🎁 Gekauft!",
+    "Bitte warte auf deine Belohnung."
+  );
+}
+
+function showRewardOverlay(reward, title, subtitle) {
+  const overlay =
+    document.getElementById("rewardOverlay");
+
+  const text =
+    document.getElementById("rewardOverlayText");
+
+  if (!overlay || !text) {
+    return;
+  }
+
+  const image =
+    reward.images?.[0] || "";
+
+  overlay.classList.remove("streak-fire");
+
+  text.innerHTML = `
+    <div class="big-reward-show">
+      ${
+        image
+          ? `<img src="${image}" class="big-reward-img">`
+          : ""
+      }
+
+      <div>${title}</div>
+
+      <small>
+        ${reward.title}<br>
+        ${subtitle}
+      </small>
+    </div>
+  `;
+
+  overlay.classList.add("visible");
+
+  setTimeout(() => {
+    overlay.classList.remove("visible");
+  }, 2800);
 }
 
 function startRewardCooldown() {
   state.rewardCooldown = true;
 
   document
-    .querySelectorAll("[data-donate], [data-withdraw], [data-buy-reward]")
+    .querySelectorAll("[data-donate], [data-withdraw], [data-buy-reward], [data-ready-reward]")
     .forEach(button => {
       button.disabled = true;
     });
@@ -450,9 +621,9 @@ function startRewardCooldown() {
     state.rewardCooldown = false;
 
     document
-      .querySelectorAll("[data-donate], [data-withdraw], [data-buy-reward]")
+      .querySelectorAll("[data-donate], [data-withdraw], [data-buy-reward], [data-ready-reward]")
       .forEach(button => {
         button.disabled = false;
       });
-  }, 5000);
+  }, 1200);
 }
