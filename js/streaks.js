@@ -20,7 +20,7 @@ async function refreshKids() {
 
 export async function loadStreaks() {
   const res = await api("getRange", {
-    range: `M${streaksStartRow}:U${streaksEndRow}`
+    range: `O${streaksStartRow}:W${streaksEndRow}`
   });
 
   state.streaksData = res.values
@@ -163,7 +163,9 @@ async function addLootForSelectedChild() {
     range: `D${row}:W${row}`
   });
 
-  const slots = res.values[0].map(value => safeNumber(value));
+  const slots = (res.values?.[0] || [])
+    .map(value => safeNumber(value));
+
   const free = slots.findIndex(value => value <= 0);
 
   if (free === -1) {
@@ -235,7 +237,7 @@ async function saveStreak() {
   }
 
   await api("setRange", {
-    range: `M${row}:U${row}`,
+    range: `O${row}:W${row}`,
     values: [[
       `S${Date.now()}`,
       child,
@@ -289,7 +291,7 @@ async function increaseStreak(row) {
         value: currentPoints + pointsToAdd
       },
       {
-        cell: `Q${row}`,
+        cell: `S${row}`,
         value: nextCurrent
       }
     ]
