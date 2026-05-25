@@ -1,185 +1,296 @@
-// Streaks Management Module
-// Handles tracking and displaying streaks (consecutive days/weeks)
-
 import { api } from "./api.js";
+
+import {
+  kidsConfig,
+  streaksStartRow,
+  streaksEndRow
+} from "./config.js";
+
 import { state } from "./state.js";
-import { kidsConfig } from "./config.js";
 
-/**
- * Load streaks data for all kids
- * Streaks track consecutive days or weeks of activity/achievement
- */
+import { loadKids } from "./kids.js";
+
 export async function loadStreaks() {
-  try {
-    // Fetch streaks data from the sheet
-    // Assuming streaks are stored in a specific range, e.g., rows 45+
-    const res = await api("getRange", {
-      range: "A45:D50"  // Adjust range based on your sheet structure
-    });
+  const res = await api("getRange", {
+    range: `M${streaksStartRow}:U${streaksEndRow}`
+  });
 
-    if (!res.values || res.values.length === 0) {
-      console.warn("⚠️ Keine Streaks-Daten gefunden");
-      state.streaksData = [];
-      return;
-    }
-
-    // Parse streaks data
-    state.streaksData = res.values
-      .map((row, i) => ({
-        row: 45 + i,
-        kidName: row[0],
-        currentStreak: Number(row[1]) || 0,
-        longestStreak: Number(row[2]) || 0,
-        lastActivityDate: row[3] || null
-      }))
-      .filter(streak => streak.kidName && kidsConfig[streak.kidName]);
-
-    console.log("✅ Streaks geladen:", state.streaksData.length);
-    renderStreaks();
-
-  } catch (error) {
-    console.error("❌ Fehler beim Laden der Streaks:", error);
-  }
+  state.streaksData = res.values
+    .map((row, i) => ({
+      row: streaksStartRow + i,
+      id: row[0],
+      child: row[1],
+      title: row[2],
+      emoji: row[3],
+      current: Number(row[4]) || 0,
+      goal: Number(row[5]) || 0,
+      pointsPerClick: Number(row[6]) || 0,
+      bonus: Number(row[7]) || 0,
+      active: String(row[8]).toUpperCase() !== "FALSE" && !!row[2]
+    }))
+    .filter(streak => streak.title);
 }
 
-/**
- * Render streaks UI for all kids
- * Shows current and longest streaks
- */
-export function renderStreaks() {
-  const streaksContainer = document.getElementById("streaksContainer");
+export function getStreaksForChild(child) {
+  return state.streaksData.filter(
+    streak => streak.active && streak.child === child
+  );
+}
 
-  if (!streaksContainer) {
-    return; // Container doesn't exist yet
+export function renderStreakDots(streak) {
+  let html = "";
+
+  for (let i = 1; i <= streak.goal; i++) {
+    html += i <= streak.current ? "🟢" : "⚫";
   }
 
-  streaksContainer.innerHTML = "";
+  return html;
+}
 
-  if (state.streaksData.length === 0) {
-    streaksContainer.innerHTML = `
-      <div class="loading">
-        Noch keine Streaks vorhanden.
-      </div>
-    `;
+export function initChildAdminEvents() {
+  document
+    .getElementById("closeChildAdminButton")
+    .addEventListener("click", closeChildAdmin);
+
+  document
+    .getElementById("childLootButton")
+    .addEventListener("click", addLootForSelectedChild);
+
+  document
+    .getElementById("saveStreakButton")
+    .addEventListener("click", saveStreak);
+}
+
+export function openChildAdmin(child) {
+  if (state.unlockedChild !== "ADMIN") {
     return;
   }
 
-  state.streaksData.forEach(streak => {
-    const kidConfig = kidsConfig[streak.kidName];
-    
-    const card = document.createElement("div");
-    card.className = `card ${kidConfig?.className || ""}`;
-    card.innerHTML = `
-      <div class="top">
-        <div class="name">
-          🔥 ${streak.kidName}
-        </div>
-        <div class="points">
-          Streak: ${streak.currentStreak}
-        </div>
-      </div>
+  state.selectedAdminChild = child;
 
-      <div class="bar-bg">
-        <div
-          class="bar"
-          style="width: ${Math.min(streak.currentStreak * 5, 100)}%"
-        >
-          ${streak.currentStreak}
-        </div>
+  document.getElementById("childAdminTitle").textContent =
+    `${child} verwalten`;
+
+  document
+    .getElementById("childAdminOverlay")
+    .classList.add("visible");
+
+  renderChildAdminStreaks();
+}
+
+export function closeChildAdmin() {
+  document
+    .getElementById("childAdminOverlay")
+    .classList.remove("visible");
+
+  state.selectedAdminChild = null;
+}
+
+function renderChildAdminStreaks() {
+  const box = document.getElementById("childStreakList");
+  const child = state.selectedAdminChild;
+
+  const streaks = getStreaksForChild(child);
+
+  if (!streaks.length) {
+    box.innerHTML = `<div class="loading">Keine Streaks vorhanden.</div>`;
+    return;
+  }
+
+  box.innerHTML = streaks.map(streak => `
+    <div class="card">
+      <b>${streak.emoji} ${streak.title}</b>
+
+      <div class="info">
+        ${renderStreakDots(streak)}
       </div>
 
       <div class="info">
-        Längster Streak: ${streak.longestStreak}
-        <br>
-        Letzte Aktivität: ${streak.lastActivityDate || "Keine"}
+        ${streak.current} / ${streak.goal}
+        · +${streak.pointsPerClick} pro Klick
+        · Bonus ${streak.bonus}
       </div>
-    `;
 
-    streaksContainer.appendChild(card);
-  });
-}
+      <button
+        class="plus"
+        data-streak-plus="${streak.row}"
+      >
+        ➕ ${streak.emoji}
+      </button>
+    </div>
+  `).join("");
 
-/**
- * Update a kid's streak
- * Called when a kid completes a daily/weekly task
- * @param {string} kidName - The kid's name
- * @param {number} newStreakValue - New streak count
- */
-export async function updateStreak(kidName, newStreakValue) {
-  try {
-    const streak = state.streaksData.find(s => s.kidName === kidName);
-
-    if (!streak) {
-      throw new Error(`Streak für ${kidName} nicht gefunden`);
-    }
-
-    // Update longest streak if current exceeds it
-    const longestStreak = Math.max(streak.longestStreak, newStreakValue);
-
-    await api("setMany", {
-      data: [
-        {
-          cell: `B${streak.row}`,
-          value: newStreakValue
-        },
-        {
-          cell: `C${streak.row}`,
-          value: longestStreak
-        },
-        {
-          cell: `D${streak.row}`,
-          value: new Date().toISOString().split("T")[0] // Today's date
-        }
-      ]
+  document
+    .querySelectorAll("[data-streak-plus]")
+    .forEach(button => {
+      button.addEventListener("click", () => {
+        increaseStreak(Number(button.dataset.streakPlus));
+      });
     });
-
-    // Reload streaks to reflect changes
-    await loadStreaks();
-    console.log(`✅ Streak für ${kidName} aktualisiert: ${newStreakValue}`);
-
-  } catch (error) {
-    console.error("❌ Fehler beim Aktualisieren der Streak:", error);
-    throw error;
-  }
 }
 
-/**
- * Reset a kid's streak to 0
- * Called when a kid breaks the streak
- * @param {string} kidName - The kid's name
- */
-export async function resetStreak(kidName) {
-  try {
-    await updateStreak(kidName, 0);
-    console.log(`⚠️ Streak für ${kidName} zurückgesetzt`);
-  } catch (error) {
-    console.error("❌ Fehler beim Zurücksetzen der Streak:", error);
-    throw error;
+async function addLootForSelectedChild() {
+  const child = state.selectedAdminChild;
+  const amount =
+    Number(document.getElementById("childLootAmount").value) || 0;
+
+  if (!child || amount <= 0) {
+    alert("Loot-Wert fehlt.");
+    return;
   }
+
+  const row = kidsConfig[child].row;
+
+  const res = await api("getRange", {
+    range: `D${row}:W${row}`
+  });
+
+  const slots = res.values[0].map(v => Number(v) || 0);
+  const free = slots.findIndex(v => v <= 0);
+
+  if (free === -1) {
+    alert("Keine freien Loot-Slots.");
+    return;
+  }
+
+  slots[free] = amount;
+
+  await api("setMany", {
+    data: [
+      {
+        cell: lootCell(row, free),
+        value: amount
+      },
+      {
+        cell: `C${row}`,
+        value: slots.filter(v => v > 0).length
+      }
+    ]
+  });
+
+  await loadKids();
+
+  alert(`${child}: +${amount} Loot erstellt.`);
 }
 
-/**
- * Get streak statistics for a specific kid
- * @param {string} kidName - The kid's name
- * @returns {object} Streak statistics
- */
-export function getStreakStats(kidName) {
-  const streak = state.streaksData.find(s => s.kidName === kidName);
+function lootCell(row, index) {
+  const columnNumber = 4 + index;
+  let letter = "";
+  let n = columnNumber;
+
+  while (n > 0) {
+    const r = (n - 1) % 26;
+    letter = String.fromCharCode(65 + r) + letter;
+    n = Math.floor((n - 1) / 26);
+  }
+
+  return `${letter}${row}`;
+}
+
+async function saveStreak() {
+  const child = state.selectedAdminChild;
+
+  const title =
+    document.getElementById("streakTitle").value.trim();
+
+  const emoji =
+    document.getElementById("streakEmoji").value.trim();
+
+  const goal =
+    Number(document.getElementById("streakGoal").value) || 0;
+
+  const points =
+    Number(document.getElementById("streakPoints").value) || 0;
+
+  const bonus =
+    Number(document.getElementById("streakBonus").value) || 0;
+
+  if (!child || !title || !emoji || goal <= 0) {
+    alert("Bitte Titel, Emoji und Ziel eintragen.");
+    return;
+  }
+
+  const usedRows =
+    state.streaksData.map(streak => streak.row);
+
+  let row = null;
+
+  for (let r = streaksStartRow; r <= streaksEndRow; r++) {
+    if (!usedRows.includes(r)) {
+      row = r;
+      break;
+    }
+  }
+
+  if (!row) {
+    alert("Keine freien Streak-Zeilen.");
+    return;
+  }
+
+  await api("setRange", {
+    range: `M${row}:U${row}`,
+    values: [[
+      `S${Date.now()}`,
+      child,
+      title,
+      emoji,
+      0,
+      goal,
+      points,
+      bonus,
+      true
+    ]]
+  });
+
+  document.getElementById("streakTitle").value = "";
+  document.getElementById("streakEmoji").value = "";
+
+  await loadStreaks();
+
+  renderChildAdminStreaks();
+}
+
+async function increaseStreak(row) {
+  const streak =
+    state.streaksData.find(s => s.row === row);
 
   if (!streak) {
-    return {
-      kidName,
-      currentStreak: 0,
-      longestStreak: 0,
-      isOnStreak: false
-    };
+    return;
   }
 
-  return {
-    kidName,
-    currentStreak: streak.currentStreak,
-    longestStreak: streak.longestStreak,
-    isOnStreak: streak.currentStreak > 0,
-    lastActivityDate: streak.lastActivityDate
-  };
+  const child = streak.child;
+  const kidRow = kidsConfig[child].row;
+
+  const kidRes = await api("getRange", {
+    range: `B${kidRow}:B${kidRow}`
+  });
+
+  const currentPoints =
+    Number(kidRes.values[0][0]) || 0;
+
+  let nextCurrent = streak.current + 1;
+  let pointsToAdd = streak.pointsPerClick;
+
+  if (nextCurrent >= streak.goal) {
+    pointsToAdd += streak.bonus;
+    nextCurrent = 0;
+  }
+
+  await api("setMany", {
+    data: [
+      {
+        cell: `B${kidRow}`,
+        value: currentPoints + pointsToAdd
+      },
+      {
+        cell: `Q${row}`,
+        value: nextCurrent
+      }
+    ]
+  });
+
+  await loadKids();
+  await loadStreaks();
+
+  renderChildAdminStreaks();
 }
