@@ -52,12 +52,6 @@ main {
   min-height: 100dvh;
 }
 
-h1 {
-  font-size: 2.4rem;
-  margin-bottom: 22px;
-  text-shadow: 0 4px 18px rgba(0,0,0,.35);
-}
-
 h2 {
   margin: 24px 0 14px;
   text-shadow: 0 3px 10px rgba(0,0,0,.25);
@@ -293,6 +287,24 @@ button:disabled {
     );
 
   color: #4a2d00;
+}
+
+.logout-floating {
+  position: fixed;
+
+  top: 16px;
+  right: 16px;
+
+  z-index: 1200;
+
+  padding: 12px 18px;
+
+  border-radius: 18px;
+
+  backdrop-filter: blur(12px);
+
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.22);
 }
 
 input,
