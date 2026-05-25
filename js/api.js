@@ -1,4 +1,7 @@
-import { API_URL, API_KEY } from "./config.js";
+import {
+  API_URL,
+  API_KEY
+} from "./config.js";
 
 export async function api(action, payload = {}) {
   const response = await fetch(API_URL, {
