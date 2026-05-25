@@ -123,7 +123,7 @@ export async function setupStreaks() {
       "getRange",
       {
         range:
-          `M${streaksStartRow - 1}:U${streaksStartRow - 1}`
+          `O${streaksStartRow - 1}:W${streaksStartRow - 1}`
       }
     );
 
@@ -137,7 +137,7 @@ export async function setupStreaks() {
     "setRange",
     {
       range:
-        `M${streaksStartRow - 1}:U${streaksStartRow - 1}`,
+        `O${streaksStartRow - 1}:W${streaksStartRow - 1}`,
 
       values: [[
 
