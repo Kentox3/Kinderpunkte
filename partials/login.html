@@ -1,63 +1,41 @@
 <div
   id="loginOverlay"
-  class="reward-overlay visible"
+  class="visible"
 >
 
-  <div
-    class="admin-panel visible"
-    style="
-      max-width:360px;
-      width:90%;
-    "
-  >
+  <div class="login-box">
 
     <h2>
-      ⭐ Login
+      Kinderpunkte
     </h2>
 
-    <div class="admin-grid">
+    <input
+      id="pinInput"
+      type="password"
+      placeholder="PIN eingeben"
+    >
 
-      <input
-        id="pinInput"
-        type="password"
-        inputmode="numeric"
-        placeholder="PIN eingeben"
-      >
+    <button
+      id="loginButton"
+      class="save"
+    >
+      Login
+    </button>
 
-      <button
-        class="open"
-        id="loginButton"
-      >
-        Einloggen
-      </button>
+    <button
+      id="guestButton"
+      class="plus"
+    >
+      Als Gast ansehen
+    </button>
 
-      <button
-        class="save"
-        id="guestButton"
-      >
-        Gastmodus
-      </button>
-
-    </div>
+    <button
+      id="logoutButton"
+      class="minus"
+    >
+      Logout
+    </button>
 
   </div>
-
-</div>
-
-<!-- LOOT OVERLAY -->
-
-<div
-  id="lootOverlay"
-  class="reward-overlay"
->
-
-  <div class="big-star">
-    ⭐
-  </div>
-
-  <div
-    id="lootText"
-    class="reward-text"
-  ></div>
 
 </div>
