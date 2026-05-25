@@ -1,49 +1,94 @@
-import { firstLootColumn } from "./config.js";
+export function safeNumber(value) {
 
-export function safeNumber(value, fallback = 0) {
-  if (value === "" || value === null || value === undefined) {
-    return fallback;
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return 0;
   }
 
-  const number = Number(value);
+  const number =
+    Number(value);
 
-  if (Number.isNaN(number)) {
-    return fallback;
-  }
+  return Number.isNaN(number)
+    ? 0
+    : number;
 
-  return number;
-}
-
-export function col(n) {
-  let s = "";
-
-  while (n > 0) {
-    const r = (n - 1) % 26;
-    s = String.fromCharCode(65 + r) + s;
-    n = Math.floor((n - 1) / 26);
-  }
-
-  return s;
-}
-
-export function lootCell(row, index) {
-  return `${col(firstLootColumn + index)}${row}`;
-}
-
-export function countOpen(slots) {
-  return slots.filter(v => safeNumber(v) > 0).length;
-}
-
-export function highestFilled(slots) {
-  for (let i = slots.length - 1; i >= 0; i--) {
-    if (safeNumber(slots[i]) > 0) {
-      return i;
-    }
-  }
-
-  return -1;
 }
 
 export function nextFree(slots) {
-  return slots.findIndex(v => safeNumber(v) <= 0);
+
+  return slots.findIndex(
+    value => safeNumber(value) <= 0
+  );
+
+}
+
+export function countOpen(slots) {
+
+  return slots.filter(
+    value => safeNumber(value) > 0
+  ).length;
+
+}
+
+export function lootCell(
+  row,
+  slotIndex
+) {
+
+  const column =
+    4 + slotIndex;
+
+  return `${columnToLetter(column)}${row}`;
+
+}
+
+export function columnToLetter(
+  column
+) {
+
+  let temp = "";
+  let letter = "";
+
+  while (column > 0) {
+
+    temp =
+      (column - 1) % 26;
+
+    letter =
+      String.fromCharCode(
+        temp + 65
+      ) + letter;
+
+    column =
+      (column - temp - 1) / 26;
+
+  }
+
+  return letter;
+
+}
+
+export function clamp(
+  value,
+  min,
+  max
+) {
+
+  return Math.min(
+    max,
+    Math.max(min, value)
+  );
+
+}
+
+export function sleep(ms) {
+
+  return new Promise(
+    resolve =>
+      setTimeout(resolve, ms)
+  );
+
 }
