@@ -8,12 +8,15 @@ import {
 
 import { state } from "./state.js";
 
-import { loadKids } from "./kids.js";
-
 import {
   safeNumber,
   lootCell
 } from "./utils.js";
+
+async function refreshKids() {
+  const module = await import("./kids.js");
+  await module.loadKids();
+}
 
 export async function loadStreaks() {
   const res = await api("getRange", {
@@ -50,7 +53,7 @@ export function renderStreakDots(streak) {
   let html = "";
 
   for (let i = 1; i <= streak.goal; i++) {
-    html += i <= streak.current ? "🟢" : "⚫";
+    html += i <= streak.current ? "🌟" : "⚫";
   }
 
   return html;
@@ -107,7 +110,6 @@ function renderChildAdminStreaks() {
         Keine Streaks vorhanden.
       </div>
     `;
-
     return;
   }
 
@@ -184,7 +186,7 @@ async function addLootForSelectedChild() {
     ]
   });
 
-  await loadKids();
+  await refreshKids();
 
   alert(`${child}: +${amount} Loot erstellt.`);
 }
@@ -293,7 +295,7 @@ async function increaseStreak(row) {
     ]
   });
 
-  await loadKids();
+  await refreshKids();
   await loadStreaks();
 
   renderChildAdminStreaks();
