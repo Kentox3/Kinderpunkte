@@ -18,7 +18,8 @@ import {
 import {
   getStreaksForChild,
   renderStreakDots,
-  openChildAdmin
+  openChildAdmin,
+  claimStreakBonus
 } from "./streaks.js";
 
 import {
@@ -68,7 +69,7 @@ export function renderKids() {
   container.innerHTML =
     state.kidsData.map(renderKidCard).join("");
 
-  bindLootButtons();
+  bindKidButtons();
 }
 
 function renderKidCard(kid) {
@@ -129,6 +130,22 @@ function renderKidCard(kid) {
                 <br>
 
                 ${streak.current}/${streak.goal}
+
+                ${
+                  state.unlockedChild === kid.name &&
+                  streak.current >= streak.goal
+                    ? `
+                      <br><br>
+
+                      <button
+                        class="flame-button"
+                        data-claim-streak="${streak.row}"
+                      >
+                        🔥 Bonus abholen
+                      </button>
+                    `
+                    : ""
+                }
               </div>
             `).join("")}
           `
@@ -167,7 +184,7 @@ function renderKidCard(kid) {
   `;
 }
 
-function bindLootButtons() {
+function bindKidButtons() {
   document
     .querySelectorAll("[data-open-loot]")
     .forEach(button => {
@@ -181,6 +198,16 @@ function bindLootButtons() {
     .forEach(button => {
       button.addEventListener("click", () => {
         openChildAdmin(button.dataset.openAdminChild);
+      });
+    });
+
+  document
+    .querySelectorAll("[data-claim-streak]")
+    .forEach(button => {
+      button.addEventListener("click", () => {
+        claimStreakBonus(
+          Number(button.dataset.claimStreak)
+        );
       });
     });
 }
@@ -239,12 +266,12 @@ async function openLoot(child) {
     ]
   });
 
-  showRewardOverlay(reward);
+  showLootOverlay(reward);
 
   await loadKids();
 }
 
-function showRewardOverlay(reward) {
+function showLootOverlay(reward) {
   const overlay =
     document.getElementById("rewardOverlay");
 
@@ -255,11 +282,15 @@ function showRewardOverlay(reward) {
     return;
   }
 
-  text.textContent = `+${reward} Punkte`;
+  overlay.classList.remove("streak-fire");
+
+  text.innerHTML = `
+    ⭐ +${reward} Punkte
+  `;
 
   overlay.classList.add("visible");
 
   setTimeout(() => {
     overlay.classList.remove("visible");
-  }, 2200);
+  }, 2400);
 }
