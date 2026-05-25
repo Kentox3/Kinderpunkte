@@ -1,3 +1,9 @@
+html,
+body {
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -9,12 +15,18 @@ body {
   color: white;
   min-height: 100vh;
   padding: 18px;
+
   background:
     radial-gradient(circle at 20% 10%, #ff8bd1 0, transparent 28%),
     radial-gradient(circle at 85% 20%, #64d8ff 0, transparent 30%),
     radial-gradient(circle at 50% 90%, #ffe66d 0, transparent 25%),
     linear-gradient(135deg, #7057ff, #00b4ff, #ff7ac8);
+
   background-attachment: fixed;
+}
+
+main {
+  overflow: hidden;
 }
 
 h1 {
@@ -25,6 +37,7 @@ h1 {
 
 h2 {
   margin: 24px 0 14px;
+  text-shadow: 0 3px 10px rgba(0,0,0,.25);
 }
 
 #kidsContainer,
@@ -36,11 +49,16 @@ h2 {
 .card,
 .reward-card,
 .admin-panel {
-  background: rgba(255,255,255,.18);
-  border: 2px solid rgba(255,255,255,.28);
+  background: rgba(255,255,255,.26);
+
+  border: 2px solid rgba(255,255,255,.25);
+
   border-radius: 30px;
+
   padding: 20px;
+
   backdrop-filter: blur(16px);
+
   box-shadow:
     0 18px 45px rgba(0,0,0,.22),
     inset 0 0 18px rgba(255,255,255,.08);
@@ -66,25 +84,42 @@ h2 {
 
 .bar-bg {
   height: 30px;
+
   background: rgba(0,0,0,.22);
+
   border-radius: 999px;
+
   padding: 4px;
+
   overflow: hidden;
-  box-shadow: inset 0 0 12px rgba(0,0,0,.35);
+
+  box-shadow:
+    inset 0 0 12px rgba(0,0,0,.35);
 }
 
 .bar {
   height: 100%;
+
   min-width: 38px;
+
   border-radius: 999px;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   color: white;
+
   font-weight: 900;
+
   font-size: .85rem;
+
   position: relative;
+
   overflow: hidden;
+
   box-shadow:
     0 0 14px rgba(255,255,255,.9),
     0 0 26px currentColor;
@@ -92,15 +127,21 @@ h2 {
 
 .bar::after {
   content: "";
+
   position: absolute;
+
   inset: 0;
-  background: linear-gradient(
-    120deg,
-    transparent 0%,
-    rgba(255,255,255,.65) 45%,
-    transparent 70%
-  );
+
+  background:
+    linear-gradient(
+      120deg,
+      transparent 0%,
+      rgba(255,255,255,.65) 45%,
+      transparent 70%
+    );
+
   transform: translateX(-120%);
+
   animation: shine 2.2s infinite;
 }
 
@@ -111,19 +152,44 @@ h2 {
 }
 
 .luna .bar {
-  background: linear-gradient(90deg, #ff4fac, #ff8bd1, #ffd1ec);
+  background:
+    linear-gradient(
+      90deg,
+      #ff4fac,
+      #ff8bd1,
+      #ffd1ec
+    );
 }
 
 .milo .bar {
-  background: linear-gradient(90deg, #009dff, #4fdcff, #c2f3ff);
+  background:
+    linear-gradient(
+      90deg,
+      #009dff,
+      #4fdcff,
+      #c2f3ff
+    );
 }
 
 .finn .bar {
-  background: linear-gradient(90deg, #24d95a, #8dff8d, #dcffd8);
+  background:
+    linear-gradient(
+      90deg,
+      #24d95a,
+      #8dff8d,
+      #dcffd8
+    );
 }
 
 .reward-card .bar {
-  background: linear-gradient(90deg, #ffb703, #ffd166, #fff3a3);
+  background:
+    linear-gradient(
+      90deg,
+      #ffb703,
+      #ffd166,
+      #fff3a3
+    );
+
   color: #5a3400;
 }
 
@@ -136,14 +202,25 @@ h2 {
 
 button {
   border: none;
+
   border-radius: 18px;
+
   padding: 13px 17px;
+
   font-size: 1rem;
+
   font-weight: 900;
+
   cursor: pointer;
+
   color: white;
-  box-shadow: 0 8px 18px rgba(0,0,0,.18);
-  transition: transform .15s ease, opacity .15s ease;
+
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.18);
+
+  transition:
+    transform .15s ease,
+    opacity .15s ease;
 }
 
 button:hover {
@@ -157,32 +234,61 @@ button:disabled {
 }
 
 .plus {
-  background: linear-gradient(135deg, #00c853, #8cff9b);
+  background:
+    linear-gradient(
+      135deg,
+      #00c853,
+      #8cff9b
+    );
 }
 
 .minus {
-  background: linear-gradient(135deg, #ff3d71, #ff8aa8);
+  background:
+    linear-gradient(
+      135deg,
+      #ff3d71,
+      #ff8aa8
+    );
 }
 
 .save {
-  background: linear-gradient(135deg, #6c63ff, #a78bfa);
+  background:
+    linear-gradient(
+      135deg,
+      #6c63ff,
+      #a78bfa
+    );
 }
 
 .open,
 .chest-button {
-  background: linear-gradient(135deg, #ffb703, #fff176);
+  background:
+    linear-gradient(
+      135deg,
+      #ffb703,
+      #fff176
+    );
+
   color: #4a2d00;
 }
 
 input,
 select {
   width: 100%;
+
   border: none;
+
   border-radius: 18px;
+
   padding: 13px 15px;
+
   font-size: 1rem;
-  background: rgba(255,255,255,.88);
+
+  background:
+    rgba(255,255,255,.9);
+
   color: #222;
+
   outline: none;
 }
 
@@ -215,18 +321,28 @@ input::placeholder {
 }
 
 .admin-dropdown {
-  background: rgba(255,255,255,.14);
-  border: 2px solid rgba(255,255,255,.18);
+  background:
+    rgba(255,255,255,.14);
+
+  border:
+    2px solid rgba(255,255,255,.18);
+
   border-radius: 24px;
+
   margin-bottom: 18px;
+
   overflow: hidden;
 }
 
 .admin-dropdown summary {
   cursor: pointer;
+
   padding: 18px 22px;
+
   font-size: 1.25rem;
+
   font-weight: 900;
+
   list-style: none;
 }
 
@@ -250,17 +366,25 @@ input::placeholder {
 
 .reward-card {
   display: grid;
-  grid-template-columns: 135px 1fr;
+
+  grid-template-columns:
+    135px 1fr;
+
   gap: 18px;
 }
 
 .reward-img {
   width: 135px;
   height: 135px;
+
   object-fit: cover;
+
   border-radius: 24px;
+
   background: rgba(0,0,0,.2);
-  box-shadow: 0 8px 22px rgba(0,0,0,.25);
+
+  box-shadow:
+    0 8px 22px rgba(0,0,0,.25);
 }
 
 .reward-title {
@@ -282,19 +406,32 @@ input::placeholder {
 
 .purchase-notice {
   margin-top: 14px;
+
   padding: 14px;
+
   border-radius: 20px;
-  background: rgba(255,255,255,.22);
-  border: 2px solid rgba(255,255,255,.2);
+
+  background:
+    rgba(255,255,255,.22);
+
+  border:
+    2px solid rgba(255,255,255,.2);
 }
 
 .reward-overlay {
   position: fixed;
+
   inset: 0;
-  background: rgba(37, 12, 84, .78);
+
+  background:
+    rgba(37,12,84,.78);
+
   display: none;
+
   align-items: center;
+
   justify-content: center;
+
   z-index: 999;
 }
 
@@ -302,17 +439,21 @@ input::placeholder {
   display: flex;
 }
 
-/* LOGIN FIX */
-
 #loginOverlay {
   position: fixed;
+
   inset: 0;
+
   background:
     radial-gradient(circle at top, rgba(255,255,255,.22), transparent 35%),
     linear-gradient(135deg, #ff7ac8, #6c63ff, #00b4ff);
+
   display: none;
+
   align-items: center;
+
   justify-content: center;
+
   z-index: 1000;
 }
 
@@ -322,23 +463,37 @@ input::placeholder {
 
 .login-box {
   width: min(92vw, 420px);
-  background: rgba(255,255,255,.2);
-  border: 2px solid rgba(255,255,255,.35);
+
+  background:
+    rgba(255,255,255,.22);
+
+  border:
+    2px solid rgba(255,255,255,.35);
+
   border-radius: 34px;
+
   padding: 26px;
+
   backdrop-filter: blur(18px);
+
   display: grid;
+
   gap: 16px;
-  box-shadow: 0 18px 50px rgba(0,0,0,.25);
+
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.25);
 }
 
 .login-box h2 {
   margin: 0;
+
   font-size: 2rem;
+
   text-align: center;
 }
 
 @media (max-width: 700px) {
+
   body {
     padding: 14px;
   }
@@ -365,4 +520,5 @@ input::placeholder {
   .reward-controls input {
     width: 100%;
   }
+
 }
