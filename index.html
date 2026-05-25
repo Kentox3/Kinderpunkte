@@ -6,6 +6,7 @@
 <title>Kinder Punkte System</title>
 
 <style>
+
 *{
   box-sizing:border-box;
 }
@@ -242,6 +243,7 @@ button{
   }
 
 }
+
 </style>
 </head>
 
@@ -280,17 +282,13 @@ button{
   <div id="lootText" class="reward-text"></div>
 </div>
 
-<div class="container" id="kidsContainer">
-  <div class="loading">Lade Kinder...</div>
-</div>
+<div class="container" id="kidsContainer"></div>
 
 <div class="reward-section-title">
   🎁 Belohnungen
 </div>
 
-<div class="reward-box" id="rewardsContainer">
-  <div class="loading">Lade Belohnungen...</div>
-</div>
+<div class="reward-box" id="rewardsContainer"></div>
 
 <div class="admin-box">
 
@@ -315,34 +313,6 @@ button{
 
       <button class="plus" onclick="giveLoot()">
         Loot vergeben
-      </button>
-
-    </div>
-
-    <h2>Belohnung erstellen</h2>
-
-    <div class="admin-grid">
-
-      <select id="rewardSelect">
-        <option value="">Neue Belohnung</option>
-      </select>
-
-      <input id="rewardTitle" placeholder="Titel">
-      <input id="rewardTarget" type="number" placeholder="Zielpunkte">
-
-      <input id="rewardImg1" placeholder="Bild URL 1">
-      <input id="rewardImg2" placeholder="Bild URL 2">
-      <input id="rewardImg3" placeholder="Bild URL 3">
-
-      <select id="rewardVisibleFor">
-        <option value="ALL">ALL</option>
-        <option value="Luna">Luna</option>
-        <option value="Milo">Milo</option>
-        <option value="Finn">Finn</option>
-      </select>
-
-      <button class="save" onclick="saveReward()">
-        Speichern
       </button>
 
     </div>
@@ -399,6 +369,7 @@ let unlockedChild = null;
 let rewardsData = [];
 let kidsData = [];
 let loadingReward = false;
+let rewardCooldown = false;
 let slideTick = 0;
 
 const kidsContainer =
@@ -532,36 +503,6 @@ async function api(action,payload={}){
 
 }
 
-function columnLetter(columnNumber){
-
-  let letter = "";
-
-  while(columnNumber > 0){
-
-    const remainder =
-    (columnNumber - 1) % 26;
-
-    letter =
-    String.fromCharCode(65 + remainder)
-    + letter;
-
-    columnNumber =
-    Math.floor((columnNumber - 1) / 26);
-
-  }
-
-  return letter;
-
-}
-
-function lootCell(row,index){
-
-  return `${columnLetter(
-    firstLootColumn + index
-  )}${row}`;
-
-}
-
 function countOpen(slots){
 
   return slots.filter(
@@ -585,14 +526,6 @@ function highestFilled(slots){
   }
 
   return -1;
-
-}
-
-function nextFree(slots){
-
-  return slots.findIndex(
-    v => Number(v) <= 0
-  );
 
 }
 
@@ -676,10 +609,6 @@ function renderKids(){
   kidsContainer.innerHTML = "";
 
   kidsData.forEach(kid => {
-
-    if(!kidsConfig[kid.name]){
-      return;
-    }
 
     const percent =
     Math.min(
@@ -776,17 +705,6 @@ function renderRewards(){
     r => r.active && canSeeReward(r)
   );
 
-  if(!visibleRewards.length){
-
-    rewardsContainer.innerHTML = `
-      <div class="loading">
-        Keine Belohnungen
-      </div>
-    `;
-
-    return;
-  }
-
   visibleRewards.forEach(reward => {
 
     const total =
@@ -855,42 +773,6 @@ function renderRewards(){
           Finn: ${reward.Finn}
         </div>
 
-        ${
-          unlockedChild
-          &&
-          unlockedChild !== "ADMIN"
-          &&
-          unlockedChild !== "GAST"
-
-          ? `
-            <div class="reward-controls">
-
-              <input
-                type="number"
-                min="1"
-                value="5"
-                id="amount-${reward.row}"
-              >
-
-              <button
-                class="plus"
-                onclick="donate(${reward.row})"
-              >
-                +
-              </button>
-
-              <button
-                class="minus"
-                onclick="withdraw(${reward.row})"
-              >
-                -
-              </button>
-
-            </div>
-          `
-          : ""
-        }
-
       </div>
 
     `;
@@ -901,400 +783,12 @@ function renderRewards(){
 
 }
 
-async function donate(row){
-
-  if(loadingReward){
-    return;
-  }
-
-  loadingReward = true;
-
-  try{
-
-    const amount =
-    Number(
-      document.getElementById(
-        `amount-${row}`
-      ).value
-    ) || 0;
-
-    if(amount <= 0){
-      return;
-    }
-
-    const child =
-    kidsConfig[unlockedChild];
-
-    const kid =
-    kidsData.find(
-      k => k.name === unlockedChild
-    );
-
-    if(kid.points < amount){
-
-      alert("Nicht genug Punkte");
-
-      loadingReward = false;
-      return;
-    }
-
-    const reward =
-    rewardsData.find(r => r.row === row);
-
-    const current =
-    Number(
-      reward[unlockedChild]
-    ) || 0;
-
-    await api("setMany",{
-
-      data:[
-
-        {
-          cell:`B${child.row}`,
-          value:kid.points - amount
-        },
-
-        {
-          cell:`${child.contributionCol}${row}`,
-          value:current + amount
-        }
-
-      ]
-
-    });
-
-    await loadAll();
-
-  }catch(error){
-
-    alert(error.message);
-
-  }
-
-  loadingReward = false;
-
-}
-
-async function withdraw(row){
-
-  if(loadingReward){
-    return;
-  }
-
-  loadingReward = true;
-
-  try{
-
-    const amount =
-    Number(
-      document.getElementById(
-        `amount-${row}`
-      ).value
-    ) || 0;
-
-    if(amount <= 0){
-      return;
-    }
-
-    const child =
-    kidsConfig[unlockedChild];
-
-    const kid =
-    kidsData.find(
-      k => k.name === unlockedChild
-    );
-
-    const reward =
-    rewardsData.find(r => r.row === row);
-
-    const current =
-    Number(
-      reward[unlockedChild]
-    ) || 0;
-
-    if(current < amount){
-
-      alert(
-        "Du kannst nur deine eigenen Punkte zurücknehmen"
-      );
-
-      loadingReward = false;
-      return;
-    }
-
-    await api("setMany",{
-
-      data:[
-
-        {
-          cell:`B${child.row}`,
-          value:kid.points + amount
-        },
-
-        {
-          cell:`${child.contributionCol}${row}`,
-          value:current - amount
-        }
-
-      ]
-
-    });
-
-    await loadAll();
-
-  }catch(error){
-
-    alert(error.message);
-
-  }
-
-  loadingReward = false;
-
-}
-
-async function claimLoot(name){
-
-  const row =
-  kidsConfig[name].row;
-
-  const res =
-  await api("getRange",{
-    range:`A${row}:W${row}`
-  });
-
-  const rowValues =
-  res.values[0];
-
-  const currentPoints =
-  Number(rowValues[1]) || 0;
-
-  const slots =
-  rowValues.slice(3,23)
-  .map(v => Number(v) || 0);
-
-  const slotIndex =
-  highestFilled(slots);
-
-  if(slotIndex === -1){
-    return;
-  }
-
-  const reward =
-  slots[slotIndex];
-
-  slots[slotIndex] = 0;
-
-  await api("setMany",{
-
-    data:[
-
-      {
-        cell:`B${row}`,
-        value:currentPoints + reward
-      },
-
-      {
-        cell:`C${row}`,
-        value:countOpen(slots)
-      },
-
-      {
-        cell:lootCell(row,slotIndex),
-        value:0
-      }
-
-    ]
-
-  });
-
-  const overlay =
-  document.getElementById(
-    "lootOverlay"
-  );
-
-  const text =
-  document.getElementById(
-    "lootText"
-  );
-
-  text.innerHTML =
-  `+${reward} Punkte`;
-
-  overlay.style.display = "flex";
-
-  setTimeout(()=>{
-    overlay.style.display = "none";
-  },1500);
-
-  await loadKids();
-
-}
-
-async function giveLoot(){
-
-  const name =
-  document.getElementById(
-    "lootChild"
-  ).value;
-
-  const amount =
-  Number(
-    document.getElementById(
-      "lootAmount"
-    ).value
-  ) || 0;
-
-  if(amount <= 0){
-    return;
-  }
-
-  const row =
-  kidsConfig[name].row;
-
-  const res =
-  await api("getRange",{
-    range:`D${row}:W${row}`
-  });
-
-  const slots =
-  res.values[0]
-  .map(v => Number(v) || 0);
-
-  const free =
-  nextFree(slots);
-
-  if(free === -1){
-
-    alert("Keine freien Slots");
-    return;
-  }
-
-  slots[free] = amount;
-
-  await api("setMany",{
-
-    data:[
-
-      {
-        cell:lootCell(row,free),
-        value:amount
-      },
-
-      {
-        cell:`C${row}`,
-        value:countOpen(slots)
-      }
-
-    ]
-
-  });
-
-  await loadKids();
-
-}
-
-async function saveReward(){
-
-  const title =
-  document.getElementById(
-    "rewardTitle"
-  ).value.trim();
-
-  const target =
-  Number(
-    document.getElementById(
-      "rewardTarget"
-    ).value
-  ) || 0;
-
-  const img1 =
-  document.getElementById(
-    "rewardImg1"
-  ).value.trim();
-
-  const img2 =
-  document.getElementById(
-    "rewardImg2"
-  ).value.trim();
-
-  const img3 =
-  document.getElementById(
-    "rewardImg3"
-  ).value.trim();
-
-  const visibleFor =
-  document.getElementById(
-    "rewardVisibleFor"
-  ).value;
-
-  if(!title || target <= 0){
-
-    alert("Titel/Ziel fehlt");
-    return;
-  }
-
-  let row = null;
-
-  const used =
-  rewardsData.map(r => r.row);
-
-  for(
-    let r = rewardsStartRow;
-    r <= rewardsEndRow;
-    r++
-  ){
-
-    if(!used.includes(r)){
-      row = r;
-      break;
-    }
-
-  }
-
-  if(!row){
-
-    alert("Keine freien Reward-Zeilen");
-    return;
-  }
-
-  await api("setRange",{
-
-    range:`A${row}:K${row}`,
-
-    values:[[
-      `R${Date.now()}`,
-      title,
-      target,
-      img1,
-      img2,
-      img3,
-      true,
-      visibleFor,
-      0,
-      0,
-      0
-    ]]
-
-  });
-
-  await loadRewards();
-
-  alert("Gespeichert");
-
-}
-
 loadAll();
 
 setInterval(()=>{
-
   slideTick++;
-
   renderRewards();
-
 },3500);
-
-setInterval(loadAll,15000);
 
 </script>
 
