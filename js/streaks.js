@@ -2,7 +2,6 @@ import { api } from "./api.js";
 
 import {
   SHEETS,
-  kidsConfig,
   streaksStartRow,
   streaksEndRow
 } from "./config.js";
@@ -54,7 +53,7 @@ export function renderStreakDots(streak) {
   let html = "";
 
   for (let i = 1; i <= streak.goal; i++) {
-    html += i <= streak.current ? "🌟" : "⚫";
+    html += i <= streak.current ? "🔥" : "⚫";
   }
 
   return html;
@@ -135,6 +134,7 @@ function renderChildAdminStreaks() {
       <button
         class="plus"
         data-streak-plus="${streak.row}"
+        ${streak.current >= streak.goal ? "disabled" : ""}
       >
         ➕ ${streak.emoji}
       </button>
@@ -162,7 +162,6 @@ async function addLootToChild(child, amount) {
   }
 
   const slots = [...kid.slots];
-
   const free = slots.findIndex(value => value <= 0);
 
   if (free === -1) {
@@ -200,8 +199,7 @@ async function addLootForSelectedChild() {
     return;
   }
 
-  const success =
-    await addLootToChild(child, amount);
+  const success = await addLootToChild(child, amount);
 
   if (!success) {
     alert("Keine freien Loot-Slots.");
@@ -289,6 +287,11 @@ async function increaseStreak(row) {
     return;
   }
 
+  if (streak.current >= streak.goal) {
+    alert("Streak ist voll. Das Kind kann jetzt den Bonus abholen.");
+    return;
+  }
+
   const clickLootOk =
     await addLootToChild(
       streak.child,
@@ -300,24 +303,8 @@ async function increaseStreak(row) {
     return;
   }
 
-  let nextCurrent = streak.current + 1;
-  let completed = streak.completed;
-
-  if (nextCurrent >= streak.goal) {
-    const bonusOk =
-      await addLootToChild(
-        streak.child,
-        streak.bonusLoot
-      );
-
-    if (!bonusOk) {
-      alert("Streak voll, aber kein freier Loot-Slot für den Bonus.");
-      return;
-    }
-
-    nextCurrent = 0;
-    completed++;
-  }
+  const nextCurrent =
+    Math.min(streak.current + 1, streak.goal);
 
   await api("setMany", {
     sheet: SHEETS.streaks,
@@ -325,10 +312,6 @@ async function increaseStreak(row) {
       {
         cell: `E${row}`,
         value: nextCurrent
-      },
-      {
-        cell: `J${row}`,
-        value: completed
       }
     ]
   });
@@ -337,4 +320,90 @@ async function increaseStreak(row) {
   await loadStreaks();
 
   renderChildAdminStreaks();
+}
+
+export async function claimStreakBonus(row) {
+  const streak =
+    state.streaksData.find(s => s.row === row);
+
+  if (!streak) {
+    return;
+  }
+
+  if (state.unlockedChild !== streak.child) {
+    alert("Du kannst nur deinen eigenen Streak-Bonus abholen.");
+    return;
+  }
+
+  if (streak.current < streak.goal) {
+    alert("Der Streak ist noch nicht voll.");
+    return;
+  }
+
+  const kid =
+    state.kidsData.find(k => k.name === streak.child);
+
+  if (!kid) {
+    return;
+  }
+
+  const newPoints =
+    kid.points + streak.bonusLoot;
+
+  const completed =
+    streak.completed + 1;
+
+  await api("setMany", {
+    sheet: SHEETS.kids,
+    data: [
+      {
+        cell: `B${kid.row}`,
+        value: newPoints
+      }
+    ]
+  });
+
+  await api("setMany", {
+    sheet: SHEETS.streaks,
+    data: [
+      {
+        cell: `E${row}`,
+        value: 0
+      },
+      {
+        cell: `J${row}`,
+        value: completed
+      }
+    ]
+  });
+
+  showStreakBonusOverlay(streak.bonusLoot);
+
+  await loadKids();
+  await loadStreaks();
+}
+
+function showStreakBonusOverlay(amount) {
+  const overlay =
+    document.getElementById("rewardOverlay");
+
+  const text =
+    document.getElementById("rewardOverlayText");
+
+  if (!overlay || !text) {
+    return;
+  }
+
+  overlay.classList.add("streak-fire");
+
+  text.innerHTML = `
+    🔥 +${amount} StreakBonus
+  `;
+
+  overlay.classList.add("visible");
+
+  setTimeout(() => {
+    overlay.classList.remove("visible");
+    overlay.classList.remove("streak-fire");
+  }, 2400);
 }
