@@ -1,26 +1,21 @@
 import { api } from "./api.js";
 
 import {
-  lootSlots,
-  rewardsStartRow
+  SHEETS,
+  lootSlots
 } from "./config.js";
 
 /* =========================================
-   KIDS
+   KIDS = Sheet 1
 ========================================= */
 
 export async function setupSheet() {
+  const res = await api("getRange", {
+    sheet: SHEETS.kids,
+    range: "A1:W1"
+  });
 
-  const res = await api(
-    "getRange",
-    {
-      range: "A1:W1"
-    }
-  );
-
-  if (
-    res.values?.[0]?.[0] === "Name"
-  ) {
+  if (res.values?.[0]?.[0] === "Name") {
     return;
   }
 
@@ -30,120 +25,110 @@ export async function setupSheet() {
     "Unclaimed"
   ];
 
-  for (
-    let i = 1;
-    i <= lootSlots;
-    i++
-  ) {
-
+  for (let i = 1; i <= lootSlots; i++) {
     headers.push(`U${i}`);
-
   }
 
-  await api(
-    "setRange",
-    {
-
-      range: "A1:W1",
-
-      values: [
-        headers
-      ]
-
-    }
-  );
-
+  await api("setRange", {
+    sheet: SHEETS.kids,
+    range: "A1:W1",
+    values: [headers]
+  });
 }
 
 /* =========================================
-   REWARDS
+   REWARDS = Sheet 2
 ========================================= */
 
 export async function setupRewards() {
+  const res = await api("getRange", {
+    sheet: SHEETS.rewards,
+    range: "A1:K1"
+  });
 
-  const res = await api(
-    "getRange",
-    {
-      range:
-        `A${rewardsStartRow - 1}:K${rewardsStartRow - 1}`
-    }
-  );
-
-  if (
-    res.values?.[0]?.[0]
-  ) {
+  if (res.values?.[0]?.[0] === "RewardID") {
     return;
   }
 
-  await api(
-    "setRange",
-    {
-
-      range:
-        `A${rewardsStartRow - 1}:K${rewardsStartRow - 1}`,
-
-      values: [[
-
-        "RewardID",
-        "Titel",
-        "Zielpunkte",
-        "Bild1",
-        "Bild2",
-        "Bild3",
-        "Aktiv",
-        "SichtbarFür",
-        "Luna",
-        "Milo",
-        "Finn"
-
-      ]]
-
-    }
-  );
-
+  await api("setRange", {
+    sheet: SHEETS.rewards,
+    range: "A1:K1",
+    values: [[
+      "RewardID",
+      "Titel",
+      "Zielpunkte",
+      "Bild1",
+      "Bild2",
+      "Bild3",
+      "Aktiv",
+      "SichtbarFür",
+      "Luna",
+      "Milo",
+      "Finn"
+    ]]
+  });
 }
 
 /* =========================================
-   STREAKS
+   STREAKS = Sheet 3
 ========================================= */
 
 export async function setupStreaks() {
+  const res = await api("getRange", {
+    sheet: SHEETS.streaks,
+    range: "A1:J1"
+  });
 
-  const res = await api(
-    "getRange",
-    {
-      range: "O10:X10"
-    }
-  );
-
-  if (
-    res.values?.[0]?.[0]
-  ) {
+  if (res.values?.[0]?.[0] === "StreakID") {
     return;
   }
 
-  await api(
-    "setRange",
-    {
+  await api("setRange", {
+    sheet: SHEETS.streaks,
+    range: "A1:J1",
+    values: [[
+      "StreakID",
+      "Kind",
+      "Titel",
+      "Emoji",
+      "Aktuell",
+      "Ziel",
+      "LootProKlick",
+      "BonusLoot",
+      "Aktiv",
+      "Abgeschlossen"
+    ]]
+  });
+}
 
-      range: "O10:X10",
+/* =========================================
+   PURCHASES = Sheet 4
+========================================= */
 
-      values: [[
+export async function setupPurchases() {
+  const res = await api("getRange", {
+    sheet: SHEETS.purchases,
+    range: "A1:J1"
+  });
 
-        "StreakID",
-        "Kind",
-        "Titel",
-        "Emoji",
-        "Aktuell",
-        "Ziel",
-        "LootProKlick",
-        "BonusLoot",
-        "Aktiv",
-        "Abgeschlossen"
+  if (res.values?.[0]?.[0] === "PurchaseID") {
+    return;
+  }
 
-      ]]
-
-    }
-  );
-
+  await api("setRange", {
+    sheet: SHEETS.purchases,
+    range: "A1:J1",
+    values: [[
+      "PurchaseID",
+      "RewardID",
+      "RewardTitel",
+      "Kind",
+      "Kosten",
+      "Status",
+      "GekauftAm",
+      "BestätigtAm",
+      "Bild",
+      "Notiz"
+    ]]
+  });
 }
