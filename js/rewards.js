@@ -1,344 +1,604 @@
 import { api } from "./api.js";
 
 import {
-  kidsConfig,
+  SHEETS,
   rewardsStartRow,
-  rewardsEndRow
+  rewardsEndRow,
+  kidsConfig
 } from "./config.js";
 
 import { state } from "./state.js";
 
-import { loadKids } from "./kids.js";
-
 import { safeNumber } from "./utils.js";
 
-export async function loadRewards() {
-  const res = await api("getRange", {
-    range: `A${rewardsStartRow}:K${rewardsEndRow}`
-  });
+import {
+  createPurchase
+} from "./purchases.js";
 
-  state.rewardsData = res.values
-    .map((row, i) => ({
-      row: rewardsStartRow + i,
-      id: row[0],
-      title: row[1],
-      target: safeNumber(row[2]),
-      images: [
-        row[3],
-        row[4],
-        row[5]
-      ].filter(Boolean),
-      active:
-        String(row[6]).toUpperCase() !== "FALSE" &&
-        !!row[1],
-      visibleFor: row[7] || "ALL",
-      Luna: safeNumber(row[8]),
-      Milo: safeNumber(row[9]),
-      Finn: safeNumber(row[10])
-    }))
-    .filter(reward => reward.title);
+import {
+  loadKids
+} from "./kids.js";
+
+export async function loadRewards() {
+
+  const res = await api(
+    "getRange",
+    {
+      sheet: SHEETS.rewards,
+      range:
+        `A${rewardsStartRow}:K${rewardsEndRow}`
+    }
+  );
+
+  state.rewardsData =
+    (res.values || [])
+      .map((row, index) => ({
+
+        row:
+          rewardsStartRow + index,
+
+        id: row[0],
+
+        title: row[1],
+
+        target:
+          safeNumber(row[2]),
+
+        images: [
+          row[3],
+          row[4],
+          row[5]
+        ].filter(Boolean),
+
+        active:
+          String(row[6])
+            .toUpperCase() !== "FALSE" &&
+          !!row[1],
+
+        visibleFor:
+          row[7] || "ALL",
+
+        Luna:
+          safeNumber(row[8]),
+
+        Milo:
+          safeNumber(row[9]),
+
+        Finn:
+          safeNumber(row[10])
+
+      }))
+      .filter(reward =>
+        reward.title
+      );
 
   renderRewards();
-}
 
-function canSeeReward(reward) {
-  if (state.unlockedChild === "ADMIN") {
-    return true;
-  }
-
-  if (reward.visibleFor === "ALL") {
-    return true;
-  }
-
-  return reward.visibleFor === state.unlockedChild;
 }
 
 export function renderRewards() {
-  const rewardsContainer = document.getElementById("rewardsContainer");
-  rewardsContainer.innerHTML = "";
 
-  const visibleRewards = state.rewardsData.filter(
-    reward =>
-      reward.active &&
-      canSeeReward(reward)
-  );
+  const container =
+    document.getElementById(
+      "rewardsContainer"
+    );
 
-  if (!visibleRewards.length) {
-    rewardsContainer.innerHTML = `
+  if (!container) {
+    return;
+  }
+
+  const rewards =
+    state.rewardsData.filter(
+      reward => reward.active
+    );
+
+  if (!rewards.length) {
+
+    container.innerHTML = `
       <div class="loading">
-        Keine Belohnungen sichtbar.
+        Keine Belohnungen vorhanden.
       </div>
     `;
 
     return;
+
   }
 
-  visibleRewards.forEach(reward => {
-    const total =
-      safeNumber(reward.Luna) +
-      safeNumber(reward.Milo) +
-      safeNumber(reward.Finn);
+  container.innerHTML =
+    rewards.map(
+      renderRewardCard
+    ).join("");
 
-    const percent =
-      reward.target > 0
-        ? Math.min((total / reward.target) * 100, 100)
-        : 0;
+  bindRewardButtons();
 
-    const width =
-      percent > 0
-        ? Math.max(percent, 8)
-        : 0;
+}
 
-    const image =
-      reward.images.length
-        ? reward.images[state.slideTick % reward.images.length]
-        : "";
+function renderRewardCard(
+  reward
+) {
 
-    const card = document.createElement("div");
-    card.className = "reward-card";
+  const total =
+    reward.Luna +
+    reward.Milo +
+    reward.Finn;
 
-    card.innerHTML = `
+  const percent =
+    Math.min(
+      100,
+      (total / reward.target) * 100
+    );
+
+  const canBuy =
+    total >= reward.target;
+
+  const image =
+    reward.images?.[0] || "";
+
+  return `
+
+    <div class="reward-card">
+
       <img
         class="reward-img"
         src="${image}"
-        onerror="this.style.display='none'"
       >
 
       <div>
+
         <div class="reward-title">
           ${reward.title}
         </div>
 
         <div class="bar-bg">
+
           <div
             class="bar"
-            style="width:${width}%"
+            style="
+              width:${percent}%
+            "
           >
-            ${Math.round(percent)}%
+            ${total}
+            /
+            ${reward.target}
           </div>
+
         </div>
 
         <div class="reward-small">
-          ${total} / ${reward.target} Punkte
+
+          Luna:
+          ${reward.Luna}
+          ⭐
+
+          <br>
+
+          Milo:
+          ${reward.Milo}
+          ⭐
+
+          <br>
+
+          Finn:
+          ${reward.Finn}
+          ⭐
+
         </div>
 
-        <div class="reward-small">
-          Luna: ${reward.Luna}
-          ·
-          Milo: ${reward.Milo}
-          ·
-          Finn: ${reward.Finn}
-        </div>
+        <div
+          class="reward-controls"
+        >
 
-        <div class="reward-small">
-          Sichtbar für: ${reward.visibleFor}
-        </div>
+          ${
+            renderRewardButtons(
+              reward
+            )
+          }
 
-        ${
-          state.unlockedChild &&
-          state.unlockedChild !== "ADMIN" &&
-          state.unlockedChild !== "GAST"
-
-            ? `
-              <div class="reward-controls">
-                <input
-                  type="number"
-                  min="1"
-                  value="5"
-                  id="amount-${reward.row}"
-                >
-
+          ${
+            canBuy
+              ? `
                 <button
-                  class="plus reward-action"
-                  data-donate="${reward.row}"
+                  class="save"
+                  data-buy-reward="${reward.row}"
                 >
-                  +
+                  🎁 Kaufen
                 </button>
+              `
+              : ""
+          }
 
-                <button
-                  class="minus reward-action"
-                  data-withdraw="${reward.row}"
-                >
-                  -
-                </button>
-              </div>
-            `
-            : ""
-        }
+        </div>
+
       </div>
-    `;
 
-    rewardsContainer.appendChild(card);
+    </div>
+
+  `;
+
+}
+
+function renderRewardButtons(
+  reward
+) {
+
+  if (
+    !state.unlockedChild ||
+    state.unlockedChild === "ADMIN"
+  ) {
+    return "";
+  }
+
+  const child =
+    state.unlockedChild;
+
+  if (
+    reward.visibleFor !== "ALL" &&
+    reward.visibleFor !== child
+  ) {
+    return "";
+  }
+
+  return `
+
+    <input
+      type="number"
+      value="5"
+      min="1"
+      id="rewardAmount-${reward.row}"
+    >
+
+    <button
+      class="plus"
+      data-donate="${reward.row}"
+    >
+      ➕
+    </button>
+
+    <button
+      class="minus"
+      data-withdraw="${reward.row}"
+    >
+      ➖
+    </button>
+
+  `;
+
+}
+
+function bindRewardButtons() {
+
+  document
+    .querySelectorAll(
+      "[data-donate]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          donate(
+            Number(
+              button.dataset.donate
+            )
+          );
+
+        }
+      );
+
+    });
+
+  document
+    .querySelectorAll(
+      "[data-withdraw]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          withdraw(
+            Number(
+              button.dataset.withdraw
+            )
+          );
+
+        }
+      );
+
+    });
+
+  document
+    .querySelectorAll(
+      "[data-buy-reward]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          buyReward(
+            Number(
+              button.dataset.buyReward
+            )
+          );
+
+        }
+      );
+
+    });
+
+}
+
+async function donate(
+  rewardRow
+) {
+
+  const child =
+    state.unlockedChild;
+
+  const reward =
+    state.rewardsData.find(
+      r => r.row === rewardRow
+    );
+
+  if (!reward || !child) {
+    return;
+  }
+
+  const input =
+    document.getElementById(
+      `rewardAmount-${rewardRow}`
+    );
+
+  const amount =
+    safeNumber(input?.value);
+
+  if (amount <= 0) {
+    return;
+  }
+
+  const kid =
+    state.kidsData.find(
+      k => k.name === child
+    );
+
+  if (
+    !kid ||
+    kid.points < amount
+  ) {
+
+    alert(
+      "Nicht genug Punkte."
+    );
+
+    return;
+
+  }
+
+  const col =
+    kidsConfig[child]
+      .contributionCol;
+
+  await api(
+    "setMany",
+    {
+      sheet: SHEETS.rewards,
+
+      data: [
+
+        {
+          cell:
+            `${col}${rewardRow}`,
+
+          value:
+            reward[child] + amount
+        }
+
+      ]
+
+    }
+  );
+
+  await api(
+    "setMany",
+    {
+      sheet: SHEETS.kids,
+
+      data: [
+
+        {
+          cell:
+            `B${kid.row}`,
+
+          value:
+            kid.points - amount
+        }
+
+      ]
+
+    }
+  );
+
+  await loadKids();
+  await loadRewards();
+
+}
+
+async function withdraw(
+  rewardRow
+) {
+
+  const child =
+    state.unlockedChild;
+
+  const reward =
+    state.rewardsData.find(
+      r => r.row === rewardRow
+    );
+
+  if (!reward || !child) {
+    return;
+  }
+
+  const input =
+    document.getElementById(
+      `rewardAmount-${rewardRow}`
+    );
+
+  const amount =
+    safeNumber(input?.value);
+
+  if (amount <= 0) {
+    return;
+  }
+
+  if (
+    reward[child] < amount
+  ) {
+
+    alert(
+      "Du kannst nur deine eigenen Punkte zurücknehmen."
+    );
+
+    return;
+
+  }
+
+  const kid =
+    state.kidsData.find(
+      k => k.name === child
+    );
+
+  const col =
+    kidsConfig[child]
+      .contributionCol;
+
+  await api(
+    "setMany",
+    {
+      sheet: SHEETS.rewards,
+
+      data: [
+
+        {
+          cell:
+            `${col}${rewardRow}`,
+
+          value:
+            reward[child] - amount
+        }
+
+      ]
+
+    }
+  );
+
+  await api(
+    "setMany",
+    {
+      sheet: SHEETS.kids,
+
+      data: [
+
+        {
+          cell:
+            `B${kid.row}`,
+
+          value:
+            kid.points + amount
+        }
+
+      ]
+
+    }
+  );
+
+  await loadKids();
+  await loadRewards();
+
+}
+
+async function buyReward(
+  rewardRow
+) {
+
+  const reward =
+    state.rewardsData.find(
+      r => r.row === rewardRow
+    );
+
+  if (!reward) {
+    return;
+  }
+
+  const total =
+    reward.Luna +
+    reward.Milo +
+    reward.Finn;
+
+  if (
+    total < reward.target
+  ) {
+
+    alert(
+      "Belohnung noch nicht voll."
+    );
+
+    return;
+
+  }
+
+  const buyer =
+    state.unlockedChild ||
+    "Unbekannt";
+
+  await createPurchase({
+
+    reward,
+
+    child: buyer,
+
+    cost: reward.target
+
   });
 
-  document
-    .querySelectorAll("[data-donate]")
-    .forEach(button => {
-      button.addEventListener("click", () => {
-        donate(Number(button.dataset.donate));
-      });
-    });
+  await api(
+    "setMany",
+    {
+      sheet: SHEETS.rewards,
 
-  document
-    .querySelectorAll("[data-withdraw]")
-    .forEach(button => {
-      button.addEventListener("click", () => {
-        withdraw(Number(button.dataset.withdraw));
-      });
-    });
-}
-
-function setRewardButtonsDisabled(disabled) {
-  document
-    .querySelectorAll(".reward-action")
-    .forEach(button => {
-      button.disabled = disabled;
-    });
-}
-
-function startCooldown() {
-  state.rewardCooldown = true;
-
-  setRewardButtonsDisabled(true);
-
-  setTimeout(() => {
-    state.rewardCooldown = false;
-    setRewardButtonsDisabled(false);
-  }, 5000);
-}
-
-export async function donate(row) {
-  if (
-    state.isSaving ||
-    state.rewardCooldown
-  ) {
-    return;
-  }
-
-  state.isSaving = true;
-  startCooldown();
-
-  try {
-    await loadKids();
-    await loadRewards();
-
-    const amount = safeNumber(
-      document.getElementById(`amount-${row}`)?.value
-    );
-
-    if (amount <= 0) {
-      throw new Error("Bitte Punkte eingeben.");
-    }
-
-    const child = kidsConfig[state.unlockedChild];
-    const reward = state.rewardsData.find(
-      r => r.row === row
-    );
-
-    if (!child || !reward) {
-      throw new Error("Daten nicht gefunden.");
-    }
-
-    const freshKidPoints = await api("get", {
-      cell: `B${child.row}`
-    });
-
-    const currentPoints = safeNumber(freshKidPoints.value);
-
-    if (currentPoints < amount) {
-      throw new Error("Nicht genug Punkte.");
-    }
-
-    const currentContribution =
-      safeNumber(reward[state.unlockedChild]);
-
-    await api("setMany", {
       data: [
+
         {
-          cell: `B${child.row}`,
-          value: currentPoints - amount
+          cell:
+            `I${rewardRow}`,
+          value: 0
         },
+
         {
-          cell: `${child.contributionCol}${row}`,
-          value: currentContribution + amount
-        }
-      ]
-    });
-
-    await loadKids();
-    await loadRewards();
-  } catch (error) {
-    alert(error.message);
-  }
-
-  state.isSaving = false;
-}
-
-export async function withdraw(row) {
-  if (
-    state.isSaving ||
-    state.rewardCooldown
-  ) {
-    return;
-  }
-
-  state.isSaving = true;
-  startCooldown();
-
-  try {
-    await loadKids();
-    await loadRewards();
-
-    const amount = safeNumber(
-      document.getElementById(`amount-${row}`)?.value
-    );
-
-    if (amount <= 0) {
-      throw new Error("Bitte Punkte eingeben.");
-    }
-
-    const child = kidsConfig[state.unlockedChild];
-    const reward = state.rewardsData.find(
-      r => r.row === row
-    );
-
-    if (!child || !reward) {
-      throw new Error("Daten nicht gefunden.");
-    }
-
-    const currentContribution =
-      safeNumber(reward[state.unlockedChild]);
-
-    if (currentContribution < amount) {
-      throw new Error(
-        "Du kannst nur deine eigenen eingezahlten Punkte zurücknehmen."
-      );
-    }
-
-    const freshKidPoints = await api("get", {
-      cell: `B${child.row}`
-    });
-
-    const currentPoints = safeNumber(freshKidPoints.value);
-
-    await api("setMany", {
-      data: [
-        {
-          cell: `B${child.row}`,
-          value: currentPoints + amount
+          cell:
+            `J${rewardRow}`,
+          value: 0
         },
+
         {
-          cell: `${child.contributionCol}${row}`,
-          value: currentContribution - amount
+          cell:
+            `K${rewardRow}`,
+          value: 0
         }
+
       ]
-    });
 
-    await loadKids();
-    await loadRewards();
-  } catch (error) {
-    alert(error.message);
-  }
+    }
+  );
 
-  state.isSaving = false;
+  await loadRewards();
+
+  alert(
+    "🎁 Belohnung gekauft!"
+  );
+
 }
