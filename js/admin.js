@@ -1,6 +1,7 @@
 import { api } from "./api.js";
 
 import {
+  SHEETS,
   kidsConfig,
   rewardsStartRow,
   rewardsEndRow
@@ -19,7 +20,6 @@ import { loadKids } from "./kids.js";
 import { loadRewards } from "./rewards.js";
 
 export function initAdminEvents() {
-
   document
     .getElementById("giveLootButton")
     ?.addEventListener("click", giveLoot);
@@ -35,15 +35,11 @@ export function initAdminEvents() {
   document
     .getElementById("deactivateRewardButton")
     ?.addEventListener("click", deactivateReward);
-
 }
 
 export async function giveLoot() {
-
   const selected = [
-    ...document.querySelectorAll(
-      'input[name="lootChild"]:checked'
-    )
+    ...document.querySelectorAll('input[name="lootChild"]:checked')
   ].map(input => input.value);
 
   const amount = safeNumber(
@@ -64,7 +60,6 @@ export async function giveLoot() {
   const messages = [];
 
   for (const name of selected) {
-
     const row = kidsConfig[name]?.row;
 
     if (!row) {
@@ -73,12 +68,12 @@ export async function giveLoot() {
     }
 
     const res = await api("getRange", {
+      sheet: SHEETS.kids,
       range: `D${row}:W${row}`
     });
 
-    const slots =
-      (res.values?.[0] || [])
-        .map(value => safeNumber(value));
+    const slots = (res.values?.[0] || [])
+      .map(value => safeNumber(value));
 
     const free = nextFree(slots);
 
@@ -99,39 +94,31 @@ export async function giveLoot() {
       value: countOpen(slots)
     });
 
-    messages.push(
-      `${name}: +${amount} in U${free + 1}`
-    );
-
+    messages.push(`${name}: +${amount} in U${free + 1}`);
   }
 
   if (updates.length) {
-
     await api("setMany", {
+      sheet: SHEETS.kids,
       data: updates
     });
-
   }
 
   const adminMessage =
     document.getElementById("adminMessage");
 
   if (adminMessage) {
-
     adminMessage.innerHTML = `
       <div class="success">
         ${messages.join("<br>")}
       </div>
     `;
-
   }
 
   await loadKids();
-
 }
 
 export function renderRewardAdmin() {
-
   const select =
     document.getElementById("rewardSelect");
 
@@ -148,13 +135,11 @@ export function renderRewardAdmin() {
   `;
 
   state.rewardsData.forEach(reward => {
-
     select.innerHTML += `
       <option value="${reward.row}">
         ${reward.title}
       </option>
     `;
-
   });
 
   if (currentValue) {
@@ -169,48 +154,31 @@ export function renderRewardAdmin() {
   }
 
   if (!state.rewardsData.length) {
-
-    info.innerHTML =
-      "Noch keine Belohnungen.";
-
+    info.innerHTML = "Noch keine Belohnungen.";
     return;
-
   }
 
-  info.innerHTML =
-    state.rewardsData.map(reward => {
+  info.innerHTML = state.rewardsData.map(reward => {
+    const total =
+      safeNumber(reward.Luna) +
+      safeNumber(reward.Milo) +
+      safeNumber(reward.Finn);
 
-      const total =
-        safeNumber(reward.Luna) +
-        safeNumber(reward.Milo) +
-        safeNumber(reward.Finn);
-
-      return `
-        <b>${reward.title}</b><br>
-
-        Ziel: ${reward.target}<br>
-
-        Sichtbar für:
-        ${reward.visibleFor}<br>
-
-        Aktiv:
-        ${reward.active ? "Ja" : "Nein"}<br>
-
-        Luna: ${reward.Luna}<br>
-        Milo: ${reward.Milo}<br>
-        Finn: ${reward.Finn}<br>
-
-        Gesamt: ${total}
-
-        <hr>
-      `;
-
-    }).join("");
-
+    return `
+      <b>${reward.title}</b><br>
+      Ziel: ${reward.target}<br>
+      Sichtbar für: ${reward.visibleFor}<br>
+      Aktiv: ${reward.active ? "Ja" : "Nein"}<br>
+      Luna: ${reward.Luna}<br>
+      Milo: ${reward.Milo}<br>
+      Finn: ${reward.Finn}<br>
+      Gesamt: ${total}
+      <hr>
+    `;
+  }).join("");
 }
 
 export function fillRewardForm() {
-
   const row = Number(
     document.getElementById("rewardSelect")?.value
   );
@@ -237,11 +205,9 @@ export function fillRewardForm() {
 
   document.getElementById("rewardVisibleFor").value =
     reward?.visibleFor || "ALL";
-
 }
 
 export async function saveReward() {
-
   const selectedRow = Number(
     document.getElementById("rewardSelect")?.value
   );
@@ -287,7 +253,6 @@ export async function saveReward() {
   let row = selectedRow;
 
   if (!row) {
-
     const usedRows =
       state.rewardsData.map(
         reward => reward.row
@@ -298,14 +263,11 @@ export async function saveReward() {
       r <= rewardsEndRow;
       r++
     ) {
-
       if (!usedRows.includes(r)) {
         row = r;
         break;
       }
-
     }
-
   }
 
   if (!row) {
@@ -322,21 +284,10 @@ export async function saveReward() {
     existing?.id ||
     `R${Date.now()}`;
 
-  const luna =
-    safeNumber(existing?.Luna);
-
-  const milo =
-    safeNumber(existing?.Milo);
-
-  const finn =
-    safeNumber(existing?.Finn);
-
   await api("setRange", {
-
+    sheet: SHEETS.rewards,
     range: `A${row}:K${row}`,
-
     values: [[
-
       id,
       title,
       target,
@@ -345,28 +296,21 @@ export async function saveReward() {
       img3,
       true,
       visibleFor,
-      luna,
-      milo,
-      finn
-
+      safeNumber(existing?.Luna),
+      safeNumber(existing?.Milo),
+      safeNumber(existing?.Finn)
     ]]
-
   });
 
   await loadRewards();
-
   renderRewardAdmin();
 
-  document.getElementById(
-    "rewardSelect"
-  ).value = row;
+  document.getElementById("rewardSelect").value = row;
 
   alert("Belohnung gespeichert.");
-
 }
 
 export async function deactivateReward() {
-
   const row = Number(
     document.getElementById("rewardSelect")?.value
   );
@@ -377,14 +321,13 @@ export async function deactivateReward() {
   }
 
   await api("set", {
+    sheet: SHEETS.rewards,
     cell: `G${row}`,
     value: false
   });
 
   await loadRewards();
-
   renderRewardAdmin();
 
   alert("Belohnung deaktiviert.");
-
 }
