@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="de">
 
 <head>
@@ -7,11 +8,14 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    content="
+      width=device-width,
+      initial-scale=1.0
+    "
   >
 
   <title>
-    Kinder Punkte
+    Kinderpunkte
   </title>
 
   <link
@@ -27,50 +31,81 @@
 
   <div id="loginMount"></div>
 
-  <!-- KINDER -->
-
-  <div
-    class="container"
-    id="kidsContainer"
-  >
-
-    <div class="loading">
-      Lade Kinder...
-    </div>
-
-  </div>
-
-  <!-- REWARDS -->
-
-  <div class="reward-section-title">
-    🎁 Belohnungen
-  </div>
-
-  <div
-    class="reward-box"
-    id="rewardsContainer"
-  >
-
-    <div class="loading">
-      Lade Belohnungen...
-    </div>
-
-  </div>
-
-  <!-- ADMIN -->
-
-  <div id="adminMount"></div>
-
-  <!-- LOGOUT -->
-
-  <button
-    class="logout-button"
-    id="logoutButton"
-  >
-    Logout
-  </button>
-
   <!-- APP -->
+
+  <main>
+
+    <h1>
+      Kinderpunkte
+    </h1>
+
+    <!-- KIDS -->
+
+    <section>
+
+      <h2>
+        Kinder
+      </h2>
+
+      <div id="kidsContainer">
+
+        <div class="loading">
+          Lade Kinder...
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- REWARDS -->
+
+    <section>
+
+      <h2>
+        Belohnungen
+      </h2>
+
+      <div id="rewardsContainer">
+
+        <div class="loading">
+          Lade Belohnungen...
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ADMIN -->
+
+    <section id="adminMount"></section>
+
+  </main>
+
+  <!-- OVERLAY -->
+
+  <div
+    id="rewardOverlay"
+    class="reward-overlay"
+  >
+
+    <div class="card">
+
+      <h2>
+        Belohnung geöffnet
+      </h2>
+
+      <div
+        id="rewardOverlayText"
+        class="name"
+      >
+        +0 Punkte
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- SCRIPTS -->
 
   <script
     type="module"
