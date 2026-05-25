@@ -735,6 +735,73 @@ input::placeholder {
 /* ========================================
    KEYFRAMES
 ======================================== */
+/* ========================================
+   BIG REWARD PURCHASE OVERLAY
+======================================== */
+
+.big-reward-show {
+  display: grid;
+
+  gap: 14px;
+
+  justify-items: center;
+
+  text-align: center;
+
+  font-size: 2rem;
+
+  font-weight: 900;
+}
+
+.big-reward-show small {
+  font-size: 1rem;
+
+  line-height: 1.45;
+
+  opacity: .95;
+}
+
+.big-reward-img {
+  width: min(70vw, 280px);
+
+  aspect-ratio: 1 / 1;
+
+  object-fit: cover;
+
+  border-radius: 32px;
+
+  box-shadow:
+    0 0 25px rgba(255,255,255,.8),
+    0 0 55px rgba(255,220,80,.65),
+    0 18px 45px rgba(0,0,0,.3);
+
+  animation:
+    rewardImagePop .75s ease-out forwards;
+}
+
+@keyframes rewardImagePop {
+  0% {
+    transform:
+      scale(.55)
+      rotate(-8deg);
+
+    opacity: 0;
+  }
+
+  65% {
+    transform:
+      scale(1.08)
+      rotate(3deg);
+
+    opacity: 1;
+  }
+
+  100% {
+    transform:
+      scale(1)
+      rotate(0);
+  }
+}
 
 @keyframes spotlightSpin {
   100% {
