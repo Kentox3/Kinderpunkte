@@ -1,8 +1,23 @@
 import { state } from "./state.js";
 
+import {
+  parentPin,
+  kidsConfig
+} from "./config.js";
+
+import {
+  setupSheet,
+  setupRewards,
+  setupStreaks,
+  setupPurchases
+} from "./setup.js";
+
 import { loadKids } from "./kids.js";
 
-import { loadRewards } from "./rewards.js";
+import {
+  loadRewards,
+  renderRewards
+} from "./rewards.js";
 
 import {
   loadStreaks,
@@ -10,358 +25,209 @@ import {
 } from "./streaks.js";
 
 import {
-  loadPurchases
+  loadPurchases,
+  renderPurchases
 } from "./purchases.js";
 
 import {
-  adminPin,
-  childPins
-} from "./config.js";
+  initAdminEvents,
+  renderRewardAdmin
+} from "./admin.js";
 
-/* ========================================
-   INIT
-======================================== */
+async function loadPartial(mountId, path) {
+  const response = await fetch(path);
+  const html = await response.text();
 
-window.addEventListener("DOMContentLoaded", async () => {
+  const mount = document.getElementById(mountId);
 
-  await loadPartials();
-
-  bindLogin();
-
-  bindLogout();
-
-  initChildAdminEvents();
-
-  await boot();
-
-});
-
-/* ========================================
-   BOOT
-======================================== */
-
-async function boot() {
-
-  try {
-
-    await loadStreaks();
-
-    await loadPurchases();
-
-    await loadKids();
-
-    await loadRewards();
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert("Fehler beim Laden.");
-
+  if (!mount) {
+    console.error(`Mount nicht gefunden: ${mountId}`);
+    return;
   }
 
+  mount.innerHTML = html;
 }
 
-/* ========================================
-   PARTIALS
-======================================== */
+async function loadChildAdminPartial() {
+  const response = await fetch("partials/child-admin.html");
+  const html = await response.text();
+
+  document.body.insertAdjacentHTML("beforeend", html);
+}
 
 async function loadPartials() {
-
-  await loadPartial(
-    "partials/login.html",
-    "loginMount"
-  );
-
-  await loadPartial(
-    "partials/admin.html",
-    "adminMount"
-  );
-
-  await loadPartial(
-    "partials/child-admin.html",
-    "adminMount",
-    true
-  );
-
+  await loadPartial("loginMount", "partials/login.html");
+  await loadPartial("adminMount", "partials/admin.html");
+  await loadChildAdminPartial();
 }
 
-async function loadPartial(
-  path,
-  targetId,
-  append = false
-) {
+function initLogin() {
+  const loginButton = document.getElementById("loginButton");
+  const guestButton = document.getElementById("guestButton");
+  const logoutButton = document.getElementById("logoutButton");
+  const pinInput = document.getElementById("pinInput");
 
-  try {
+  if (!loginButton || !guestButton || !logoutButton) {
+    console.error("Login Elemente fehlen");
+    return;
+  }
 
-    const res = await fetch(path);
+  const savedLogin = localStorage.getItem("unlockedChild");
 
-    const html = await res.text();
+  if (savedLogin) {
+    state.unlockedChild = savedLogin;
 
-    const target =
-      document.getElementById(targetId);
+    document
+      .getElementById("loginOverlay")
+      ?.classList.remove("visible");
 
-    if (!target) {
-      return;
+    if (savedLogin === "ADMIN") {
+      document
+        .querySelector(".admin-panel")
+        ?.classList.add("visible");
     }
+  }
 
-    if (append) {
-      target.innerHTML += html;
-    } else {
-      target.innerHTML = html;
+  loginButton.addEventListener("click", unlock);
+  guestButton.addEventListener("click", guestLogin);
+  logoutButton.addEventListener("click", logout);
+
+  pinInput?.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      unlock();
     }
-
-  } catch (error) {
-
-    console.error("Partial Fehler:", path);
-
-  }
-
+  });
 }
 
-/* ========================================
-   LOGIN
-======================================== */
+function guestLogin() {
+  state.unlockedChild = "GUEST";
 
-function bindLogin() {
-
-  const loginButton =
-    document.getElementById("loginButton");
-
-  const guestButton =
-    document.getElementById("guestButton");
-
-  const pinInput =
-    document.getElementById("pinInput");
-
-  if (loginButton) {
-
-    loginButton.addEventListener(
-      "click",
-      tryLogin
-    );
-
-  }
-
-  if (pinInput) {
-
-    pinInput.addEventListener(
-      "keydown",
-      event => {
-
-        if (event.key === "Enter") {
-          tryLogin();
-        }
-
-      }
-    );
-
-  }
-
-  if (guestButton) {
-
-    guestButton.addEventListener(
-      "click",
-      () => {
-
-        unlock("GUEST");
-
-      }
-    );
-
-  }
-
-}
-
-function tryLogin() {
-
-  const pin =
-    document.getElementById("pinInput")
-      ?.value
-      ?.trim();
-
-  if (!pin) {
-
-    alert("PIN fehlt.");
-
-    return;
-
-  }
-
-  if (pin === adminPin) {
-
-    unlock("ADMIN");
-
-    return;
-
-  }
-
-  const child =
-    Object.keys(childPins)
-      .find(name =>
-        String(childPins[name]) === pin
-      );
-
-  if (!child) {
-
-    alert("Falsche PIN.");
-
-    return;
-
-  }
-
-  unlock(child);
-
-}
-
-function unlock(role) {
-
-  state.unlockedChild = role;
-
-  localStorage.setItem(
-    "kinderpunkte_role",
-    role
-  );
-
-  closeLogin();
-
-  updateRoleUI();
-
-  reloadEverything();
-
-}
-
-function closeLogin() {
+  localStorage.setItem("unlockedChild", "GUEST");
 
   document
     .getElementById("loginOverlay")
-    ?.classList
-    .remove("visible");
-
-}
-
-function openLogin() {
-
-  document
-    .getElementById("loginOverlay")
-    ?.classList
-    .add("visible");
-
-}
-
-/* ========================================
-   LOGOUT
-======================================== */
-
-function bindLogout() {
-
-  const logoutButton =
-    document.getElementById("logoutButton");
-
-  if (!logoutButton) {
-    return;
-  }
-
-  logoutButton.addEventListener(
-    "click",
-    logout
-  );
-
-}
-
-function logout() {
-
-  state.unlockedChild = null;
-
-  localStorage.removeItem(
-    "kinderpunkte_role"
-  );
+    ?.classList.remove("visible");
 
   hideAdmin();
 
-  openLogin();
-
-  reloadEverything();
-
+  loadAll();
 }
 
-/* ========================================
-   ROLE UI
-======================================== */
+function unlock() {
+  const pin =
+    document.getElementById("pinInput")?.value?.trim();
 
-function updateRoleUI() {
+  if (pin === parentPin) {
+    state.unlockedChild = "ADMIN";
 
-  if (state.unlockedChild === "ADMIN") {
+    localStorage.setItem("unlockedChild", "ADMIN");
+
+    document
+      .getElementById("loginOverlay")
+      ?.classList.remove("visible");
 
     showAdmin();
 
-  } else {
+    loadAll();
 
-    hideAdmin();
-
-  }
-
-}
-
-function showAdmin() {
-
-  document
-    .querySelector(".admin-panel")
-    ?.classList
-    .add("visible");
-
-}
-
-function hideAdmin() {
-
-  document
-    .querySelector(".admin-panel")
-    ?.classList
-    .remove("visible");
-
-}
-
-/* ========================================
-   RELOAD
-======================================== */
-
-async function reloadEverything() {
-
-  await loadStreaks();
-
-  await loadPurchases();
-
-  await loadKids();
-
-  await loadRewards();
-
-}
-
-/* ========================================
-   AUTO LOGIN
-======================================== */
-
-(() => {
-
-  const saved =
-    localStorage.getItem(
-      "kinderpunkte_role"
-    );
-
-  if (!saved) {
     return;
   }
 
-  state.unlockedChild = saved;
+  const child =
+    Object.keys(kidsConfig).find(
+      key => kidsConfig[key].pin === pin
+    );
 
-  setTimeout(() => {
+  if (!child) {
+    alert("Falsche PIN");
+    return;
+  }
 
-    closeLogin();
+  state.unlockedChild = child;
 
-    updateRoleUI();
+  localStorage.setItem("unlockedChild", child);
 
-    reloadEverything();
+  document
+    .getElementById("loginOverlay")
+    ?.classList.remove("visible");
 
-  }, 100);
+  hideAdmin();
 
-})();
+  loadAll();
+}
+
+function logout() {
+  localStorage.removeItem("unlockedChild");
+
+  state.unlockedChild = null;
+
+  hideAdmin();
+
+  document
+    .getElementById("loginOverlay")
+    ?.classList.add("visible");
+
+  loadAll();
+}
+
+function showAdmin() {
+  document
+    .querySelector(".admin-panel")
+    ?.classList.add("visible");
+}
+
+function hideAdmin() {
+  document
+    .querySelector(".admin-panel")
+    ?.classList.remove("visible");
+}
+
+async function loadAll() {
+  try {
+    await setupSheet();
+    await setupRewards();
+    await setupStreaks();
+    await setupPurchases();
+
+    await loadPurchases();
+    await loadStreaks();
+    await loadKids();
+    await loadRewards();
+
+    renderRewardAdmin();
+    renderPurchases();
+
+  } catch (error) {
+    console.error(error);
+
+    document.getElementById("kidsContainer").innerHTML = `
+      <div class="error">
+        ${error.message}
+      </div>
+    `;
+  }
+}
+
+async function start() {
+  try {
+    await loadPartials();
+
+    initLogin();
+    initAdminEvents();
+    initChildAdminEvents();
+
+    await loadAll();
+
+    setInterval(() => {
+      state.slideTick++;
+      renderRewards();
+    }, 3500);
+
+    setInterval(loadAll, 15000);
+
+  } catch (error) {
+    console.error("App Start Fehler:", error);
+  }
+}
+
+start();
