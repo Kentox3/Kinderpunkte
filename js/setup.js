@@ -2,19 +2,21 @@ import { api } from "./api.js";
 
 import {
   lootSlots,
-  streaksStartRow,
   rewardsStartRow
 } from "./config.js";
 
+/* =========================================
+   KIDS
+========================================= */
+
 export async function setupSheet() {
 
-  const res =
-    await api(
-      "getRange",
-      {
-        range: "A1:W4"
-      }
-    );
+  const res = await api(
+    "getRange",
+    {
+      range: "A1:W4"
+    }
+  );
 
   if (
     res.values?.[0]?.[0]
@@ -41,6 +43,7 @@ export async function setupSheet() {
   await api(
     "setRange",
     {
+
       range: "A1:W4",
 
       values: [
@@ -69,20 +72,25 @@ export async function setupSheet() {
         ]
 
       ]
+
     }
   );
 
 }
 
+/* =========================================
+   REWARDS
+========================================= */
+
 export async function setupRewards() {
 
-  const res =
-    await api(
-      "getRange",
-      {
-        range: `A${rewardsStartRow - 1}:K${rewardsStartRow - 1}`
-      }
-    );
+  const res = await api(
+    "getRange",
+    {
+      range:
+        `A${rewardsStartRow - 1}:K${rewardsStartRow - 1}`
+    }
+  );
 
   if (
     res.values?.[0]?.[0]
@@ -93,6 +101,7 @@ export async function setupRewards() {
   await api(
     "setRange",
     {
+
       range:
         `A${rewardsStartRow - 1}:K${rewardsStartRow - 1}`,
 
@@ -111,21 +120,24 @@ export async function setupRewards() {
         "Finn"
 
       ]]
+
     }
   );
 
 }
 
+/* =========================================
+   STREAKS
+========================================= */
+
 export async function setupStreaks() {
 
-  const res =
-    await api(
-      "getRange",
-      {
-        range:
-          `O${streaksStartRow - 1}:W${streaksStartRow - 1}`
-      }
-    );
+  const res = await api(
+    "getRange",
+    {
+      range: "O10:X10"
+    }
+  );
 
   if (
     res.values?.[0]?.[0]
@@ -136,8 +148,8 @@ export async function setupStreaks() {
   await api(
     "setRange",
     {
-      range:
-        `O${streaksStartRow - 1}:W${streaksStartRow - 1}`,
+
+      range: "O10:X10",
 
       values: [[
 
@@ -147,11 +159,13 @@ export async function setupStreaks() {
         "Emoji",
         "Aktuell",
         "Ziel",
-        "PunkteProKlick",
-        "BonusBeiAbschluss",
-        "Aktiv"
+        "LootProKlick",
+        "BonusLoot",
+        "Aktiv",
+        "Abgeschlossen"
 
       ]]
+
     }
   );
 
