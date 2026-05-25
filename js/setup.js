@@ -14,12 +14,12 @@ export async function setupSheet() {
   const res = await api(
     "getRange",
     {
-      range: "A1:W4"
+      range: "A1:W1"
     }
   );
 
   if (
-    res.values?.[0]?.[0]
+    res.values?.[0]?.[0] === "Name"
   ) {
     return;
   }
@@ -44,33 +44,10 @@ export async function setupSheet() {
     "setRange",
     {
 
-      range: "A1:W4",
+      range: "A1:W1",
 
       values: [
-
-        headers,
-
-        [
-          "Luna",
-          0,
-          0,
-          ...Array(lootSlots).fill(0)
-        ],
-
-        [
-          "Milo",
-          0,
-          0,
-          ...Array(lootSlots).fill(0)
-        ],
-
-        [
-          "Finn",
-          0,
-          0,
-          ...Array(lootSlots).fill(0)
-        ]
-
+        headers
       ]
 
     }
