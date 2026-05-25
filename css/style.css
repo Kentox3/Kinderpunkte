@@ -298,6 +298,25 @@ button:disabled {
   color: #4a2d00;
 }
 
+.flame-button {
+  background:
+    linear-gradient(
+      135deg,
+      #ff3d00,
+      #ff9800,
+      #ffd54f
+    );
+
+  color: #421400;
+
+  animation:
+    flamePulse 1.1s infinite alternate;
+
+  box-shadow:
+    0 0 18px rgba(255,120,0,.65),
+    0 8px 18px rgba(0,0,0,.22);
+}
+
 .logout-bottom {
   display: block;
 
@@ -462,25 +481,163 @@ input::placeholder {
     2px solid rgba(255,255,255,.2);
 }
 
+/* ========================================
+   LOOT / STREAK OPENING ANIMATION
+======================================== */
+
 .reward-overlay {
   position: fixed;
-
   inset: 0;
 
   background:
-    rgba(37,12,84,.78);
+    radial-gradient(
+      circle at center,
+      rgba(255,255,255,.22),
+      rgba(37,12,84,.86) 45%,
+      rgba(0,0,0,.88) 100%
+    );
 
   display: none;
-
   align-items: center;
-
   justify-content: center;
 
   z-index: 999;
+
+  overflow: hidden;
 }
 
 .reward-overlay.visible {
   display: flex;
+}
+
+.reward-overlay.visible::before {
+  content: "";
+
+  position: absolute;
+
+  width: 360px;
+  height: 360px;
+
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent,
+      rgba(255,255,255,.75),
+      transparent,
+      rgba(255,230,80,.75),
+      transparent
+    );
+
+  border-radius: 50%;
+
+  animation:
+    spotlightSpin 2.4s linear infinite;
+
+  filter:
+    blur(1px);
+
+  opacity: .85;
+}
+
+.reward-overlay.visible::after {
+  content: "⭐ ⭐ ⭐ ⭐ ⭐";
+
+  position: absolute;
+
+  font-size: 2.2rem;
+
+  animation:
+    starsBurst 2.4s ease-out forwards;
+
+  text-shadow:
+    0 0 14px white,
+    0 0 28px gold;
+}
+
+.reward-overlay .card {
+  position: relative;
+
+  z-index: 2;
+
+  text-align: center;
+
+  transform:
+    scale(.65);
+
+  animation:
+    rewardPop .55s ease-out forwards;
+
+  background:
+    rgba(255,255,255,.25);
+
+  border:
+    3px solid rgba(255,255,255,.45);
+
+  box-shadow:
+    0 0 35px rgba(255,255,255,.55),
+    0 0 70px rgba(255,220,80,.45);
+}
+
+#rewardOverlayText {
+  font-size: 2.2rem;
+
+  margin-top: 10px;
+
+  animation:
+    textPulse .9s ease-in-out infinite alternate;
+
+  text-shadow:
+    0 0 14px white,
+    0 0 28px gold;
+}
+
+/* STREAK FIRE */
+
+.reward-overlay.streak-fire {
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(255,210,80,.3),
+      rgba(140,35,0,.88) 45%,
+      rgba(0,0,0,.9) 100%
+    );
+}
+
+.reward-overlay.streak-fire.visible::before {
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent,
+      rgba(255,210,40,.85),
+      transparent,
+      rgba(255,80,20,.85),
+      transparent
+    );
+}
+
+.reward-overlay.streak-fire.visible::after {
+  content: "🔥 🔥 🔥 🔥 🔥";
+
+  text-shadow:
+    0 0 14px #fff,
+    0 0 28px #ff6b00,
+    0 0 42px #ff2a00;
+}
+
+.reward-overlay.streak-fire .card {
+  box-shadow:
+    0 0 35px rgba(255,180,40,.7),
+    0 0 80px rgba(255,70,0,.55);
+
+  border:
+    3px solid rgba(255,220,120,.65);
+}
+
+.reward-overlay.streak-fire #rewardOverlayText {
+  text-shadow:
+    0 0 14px white,
+    0 0 28px orange,
+    0 0 42px red;
 }
 
 #loginOverlay {
@@ -540,6 +697,94 @@ input::placeholder {
   font-size: 2rem;
 
   text-align: center;
+}
+
+/* ========================================
+   KEYFRAMES
+======================================== */
+
+@keyframes spotlightSpin {
+  100% {
+    transform:
+      rotate(360deg)
+      scale(1.25);
+  }
+}
+
+@keyframes starsBurst {
+  0% {
+    transform:
+      scale(.2)
+      translateY(40px);
+
+    opacity: 0;
+  }
+
+  35% {
+    opacity: 1;
+  }
+
+  100% {
+    transform:
+      scale(1.8)
+      translateY(-110px);
+
+    opacity: 0;
+  }
+}
+
+@keyframes rewardPop {
+  0% {
+    transform:
+      scale(.5)
+      rotate(-4deg);
+
+    opacity: 0;
+  }
+
+  65% {
+    transform:
+      scale(1.1)
+      rotate(2deg);
+
+    opacity: 1;
+  }
+
+  100% {
+    transform:
+      scale(1)
+      rotate(0);
+  }
+}
+
+@keyframes textPulse {
+  from {
+    transform:
+      scale(1);
+  }
+
+  to {
+    transform:
+      scale(1.08);
+  }
+}
+
+@keyframes flamePulse {
+  from {
+    transform:
+      scale(1);
+
+    filter:
+      brightness(1);
+  }
+
+  to {
+    transform:
+      scale(1.06);
+
+    filter:
+      brightness(1.2);
+  }
 }
 
 @media (max-width: 700px) {
