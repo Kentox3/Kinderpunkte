@@ -2,293 +2,135 @@ import { api } from "./api.js";
 
 import {
   SHEETS,
-  kidsConfig,
   rewardsStartRow,
-  rewardsEndRow
+  rewardsEndRow,
+  streaksStartRow,
+  streaksEndRow
 } from "./config.js";
 
 import { state } from "./state.js";
 
-import {
-  nextFree,
-  lootCell,
-  countOpen,
-  safeNumber
-} from "./utils.js";
+import { safeNumber } from "./utils.js";
 
 import { loadKids } from "./kids.js";
 import { loadRewards } from "./rewards.js";
+import { loadStreaks } from "./streaks.js";
+import { renderPurchases } from "./purchases.js";
 
 export function initAdminEvents() {
   document
-    .getElementById("giveLootButton")
-    ?.addEventListener("click", giveLoot);
-
-  document
-    .getElementById("rewardSelect")
-    ?.addEventListener("change", fillRewardForm);
+    .getElementById("adminLootButton")
+    ?.addEventListener("click", giveAdminLoot);
 
   document
     .getElementById("saveRewardButton")
     ?.addEventListener("click", saveReward);
 
   document
-    .getElementById("deactivateRewardButton")
-    ?.addEventListener("click", deactivateReward);
+    .getElementById("saveStreakButton")
+    ?.addEventListener("click", saveAdminStreak);
 }
 
-export async function giveLoot() {
-  const selected = [
-    ...document.querySelectorAll('input[name="lootChild"]:checked')
-  ].map(input => input.value);
+async function giveAdminLoot() {
+  const child =
+    document.getElementById("adminLootChild")?.value;
 
   const amount = safeNumber(
-    document.getElementById("lootAmount")?.value
+    document.getElementById("adminLootAmount")?.value
   );
 
-  if (!selected.length) {
-    alert("Bitte mindestens ein Kind auswählen.");
+  if (!child || amount <= 0) {
+    alert("Bitte Kind und Loot-Wert auswählen.");
     return;
   }
 
-  if (amount <= 0) {
-    alert("Bitte Loot-Wert eingeben.");
+  const kid =
+    state.kidsData.find(k => k.name === child);
+
+  if (!kid) {
+    alert("Kind nicht gefunden.");
     return;
   }
 
-  const updates = [];
-  const messages = [];
+  const slots = [...kid.slots];
+  const free = slots.findIndex(value => value <= 0);
 
-  for (const name of selected) {
-    const row = kidsConfig[name]?.row;
-
-    if (!row) {
-      messages.push(`${name}: unbekanntes Kind`);
-      continue;
-    }
-
-    const res = await api("getRange", {
-      sheet: SHEETS.kids,
-      range: `D${row}:W${row}`
-    });
-
-    const slots = (res.values?.[0] || [])
-      .map(value => safeNumber(value));
-
-    const free = nextFree(slots);
-
-    if (free === -1) {
-      messages.push(`${name}: keine freien Slots`);
-      continue;
-    }
-
-    slots[free] = amount;
-
-    updates.push({
-      cell: lootCell(row, free),
-      value: amount
-    });
-
-    updates.push({
-      cell: `C${row}`,
-      value: countOpen(slots)
-    });
-
-    messages.push(`${name}: +${amount} in U${free + 1}`);
-  }
-
-  if (updates.length) {
-    await api("setMany", {
-      sheet: SHEETS.kids,
-      data: updates
-    });
-  }
-
-  const adminMessage =
-    document.getElementById("adminMessage");
-
-  if (adminMessage) {
-    adminMessage.innerHTML = `
-      <div class="success">
-        ${messages.join("<br>")}
-      </div>
-    `;
-  }
-
-  await loadKids();
-}
-
-export function renderRewardAdmin() {
-  const select =
-    document.getElementById("rewardSelect");
-
-  if (!select) {
+  if (free === -1) {
+    alert("Keine freien Loot-Slots.");
     return;
   }
 
-  const currentValue = select.value;
+  slots[free] = amount;
 
-  select.innerHTML = `
-    <option value="">
-      Neue Belohnung
-    </option>
-  `;
+  const cell =
+    columnToLetter(4 + free) + kid.row;
 
-  state.rewardsData.forEach(reward => {
-    select.innerHTML += `
-      <option value="${reward.row}">
-        ${reward.title}
-      </option>
-    `;
+  await api("setMany", {
+    sheet: SHEETS.kids,
+    data: [
+      {
+        cell,
+        value: amount
+      },
+      {
+        cell: `C${kid.row}`,
+        value: slots.filter(value => value > 0).length
+      }
+    ]
   });
 
-  if (currentValue) {
-    select.value = currentValue;
-  }
+  await loadKids();
 
-  const info =
-    document.getElementById("rewardAdminInfo");
-
-  if (!info) {
-    return;
-  }
-
-  if (!state.rewardsData.length) {
-    info.innerHTML = "Noch keine Belohnungen.";
-    return;
-  }
-
-  info.innerHTML = state.rewardsData.map(reward => {
-    const total =
-      safeNumber(reward.Luna) +
-      safeNumber(reward.Milo) +
-      safeNumber(reward.Finn);
-
-    return `
-      <b>${reward.title}</b><br>
-      Ziel: ${reward.target}<br>
-      Sichtbar für: ${reward.visibleFor}<br>
-      Aktiv: ${reward.active ? "Ja" : "Nein"}<br>
-      Luna: ${reward.Luna}<br>
-      Milo: ${reward.Milo}<br>
-      Finn: ${reward.Finn}<br>
-      Gesamt: ${total}
-      <hr>
-    `;
-  }).join("");
-}
-
-export function fillRewardForm() {
-  const row = Number(
-    document.getElementById("rewardSelect")?.value
-  );
-
-  const reward =
-    state.rewardsData.find(
-      item => item.row === row
-    );
-
-  document.getElementById("rewardTitle").value =
-    reward?.title || "";
-
-  document.getElementById("rewardTarget").value =
-    reward?.target || "";
-
-  document.getElementById("rewardImg1").value =
-    reward?.images?.[0] || "";
-
-  document.getElementById("rewardImg2").value =
-    reward?.images?.[1] || "";
-
-  document.getElementById("rewardImg3").value =
-    reward?.images?.[2] || "";
-
-  document.getElementById("rewardVisibleFor").value =
-    reward?.visibleFor || "ALL";
+  alert(`${child}: +${amount} Loot erstellt.`);
 }
 
 export async function saveReward() {
-  const selectedRow = Number(
-    document.getElementById("rewardSelect")?.value
-  );
-
   const title =
-    document.getElementById("rewardTitle")
-      ?.value
-      .trim() || "";
+    document.getElementById("rewardTitle")?.value.trim() || "";
 
   const target = safeNumber(
-    document.getElementById("rewardTarget")?.value
+    document.getElementById("rewardGoal")?.value
   );
 
   const img1 =
-    document.getElementById("rewardImg1")
-      ?.value
-      .trim() || "";
+    document.getElementById("rewardImage1")?.value.trim() || "";
 
   const img2 =
-    document.getElementById("rewardImg2")
-      ?.value
-      .trim() || "";
+    document.getElementById("rewardImage2")?.value.trim() || "";
 
   const img3 =
-    document.getElementById("rewardImg3")
-      ?.value
-      .trim() || "";
+    document.getElementById("rewardImage3")?.value.trim() || "";
 
   const visibleFor =
-    document.getElementById("rewardVisibleFor")
-      ?.value || "ALL";
+    document.getElementById("rewardVisibleFor")?.value || "ALL";
 
-  if (!title) {
-    alert("Titel fehlt.");
+  if (!title || target <= 0) {
+    alert("Bitte Reward-Titel und Punkte eintragen.");
     return;
   }
 
-  if (target <= 0) {
-    alert("Zielpunkte fehlen.");
-    return;
-  }
+  const usedRows =
+    state.rewardsData.map(reward => reward.row);
 
-  let row = selectedRow;
+  let row = null;
 
-  if (!row) {
-    const usedRows =
-      state.rewardsData.map(
-        reward => reward.row
-      );
-
-    for (
-      let r = rewardsStartRow;
-      r <= rewardsEndRow;
-      r++
-    ) {
-      if (!usedRows.includes(r)) {
-        row = r;
-        break;
-      }
+  for (let r = rewardsStartRow; r <= rewardsEndRow; r++) {
+    if (!usedRows.includes(r)) {
+      row = r;
+      break;
     }
   }
 
   if (!row) {
-    alert("Keine freien Reward-Zeilen mehr.");
+    alert("Keine freien Reward-Zeilen.");
     return;
   }
-
-  const existing =
-    state.rewardsData.find(
-      reward => reward.row === row
-    );
-
-  const id =
-    existing?.id ||
-    `R${Date.now()}`;
 
   await api("setRange", {
     sheet: SHEETS.rewards,
     range: `A${row}:K${row}`,
     values: [[
-      id,
+      `R${Date.now()}`,
       title,
       target,
       img1,
@@ -296,38 +138,122 @@ export async function saveReward() {
       img3,
       true,
       visibleFor,
-      safeNumber(existing?.Luna),
-      safeNumber(existing?.Milo),
-      safeNumber(existing?.Finn)
+      0,
+      0,
+      0
     ]]
   });
 
+  clearRewardForm();
+
   await loadRewards();
   renderRewardAdmin();
 
-  document.getElementById("rewardSelect").value = row;
-
-  alert("Belohnung gespeichert.");
+  alert("Reward gespeichert.");
 }
 
-export async function deactivateReward() {
-  const row = Number(
-    document.getElementById("rewardSelect")?.value
+async function saveAdminStreak() {
+  const child =
+    document.getElementById("streakChild")?.value;
+
+  const title =
+    document.getElementById("streakTitle")?.value.trim() || "";
+
+  const emoji =
+    document.getElementById("streakEmoji")?.value.trim() || "";
+
+  const goal = safeNumber(
+    document.getElementById("streakGoal")?.value
   );
 
-  if (!row) {
-    alert("Bitte Belohnung auswählen.");
+  const loot = safeNumber(
+    document.getElementById("streakPoints")?.value
+  );
+
+  const bonus = safeNumber(
+    document.getElementById("streakBonus")?.value
+  );
+
+  if (!child || !title || !emoji || goal <= 0) {
+    alert("Bitte Kind, Titel, Emoji und Ziel eintragen.");
     return;
   }
 
-  await api("set", {
-    sheet: SHEETS.rewards,
-    cell: `G${row}`,
-    value: false
+  const usedRows =
+    state.streaksData.map(streak => streak.row);
+
+  let row = null;
+
+  for (let r = streaksStartRow; r <= streaksEndRow; r++) {
+    if (!usedRows.includes(r)) {
+      row = r;
+      break;
+    }
+  }
+
+  if (!row) {
+    alert("Keine freien Streak-Zeilen.");
+    return;
+  }
+
+  await api("setRange", {
+    sheet: SHEETS.streaks,
+    range: `A${row}:J${row}`,
+    values: [[
+      `S${Date.now()}`,
+      child,
+      title,
+      emoji,
+      0,
+      goal,
+      loot,
+      bonus,
+      true,
+      0
+    ]]
   });
 
-  await loadRewards();
-  renderRewardAdmin();
+  clearStreakForm();
 
-  alert("Belohnung deaktiviert.");
+  await loadStreaks();
+  await loadKids();
+
+  alert("Streak gespeichert.");
+}
+
+export function renderRewardAdmin() {
+  renderPurchases();
+}
+
+function clearRewardForm() {
+  document.getElementById("rewardTitle").value = "";
+  document.getElementById("rewardGoal").value = "";
+  document.getElementById("rewardImage1").value = "";
+  document.getElementById("rewardImage2").value = "";
+  document.getElementById("rewardImage3").value = "";
+}
+
+function clearStreakForm() {
+  document.getElementById("streakTitle").value = "";
+  document.getElementById("streakEmoji").value = "";
+  document.getElementById("streakGoal").value = "";
+  document.getElementById("streakPoints").value = "";
+  document.getElementById("streakBonus").value = "";
+}
+
+function columnToLetter(column) {
+  let temp = "";
+  let letter = "";
+
+  while (column > 0) {
+    temp = (column - 1) % 26;
+
+    letter =
+      String.fromCharCode(temp + 65) + letter;
+
+    column =
+      (column - temp - 1) / 26;
+  }
+
+  return letter;
 }
