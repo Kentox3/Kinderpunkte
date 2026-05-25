@@ -3,104 +3,123 @@
   class="reward-overlay"
 >
 
-  <div
-    class="admin-panel visible"
-    style="
-      max-width:430px;
-      width:92%;
-    "
-  >
+  <div class="admin-panel visible">
 
-    <h2 id="childAdminTitle">
-      Kind verwalten
-    </h2>
+    <div class="top">
 
-    <div class="admin-grid">
-
-      <!-- LOOT -->
-
-      <h3>
-        Loot vergeben
-      </h3>
-
-      <input
-        id="childLootAmount"
-        type="number"
-        min="1"
-        value="5"
-        placeholder="Loot-Wert"
+      <div
+        id="childAdminTitle"
+        class="name"
       >
+        Kind verwalten
+      </div>
 
       <button
-        class="plus"
-        id="childLootButton"
-      >
-        Loot hinzufügen
-      </button>
-
-      <!-- STREAKS -->
-
-      <h3>
-        Streaks
-      </h3>
-
-      <div id="childStreakList"></div>
-
-      <!-- NEUE STREAK -->
-
-      <h3>
-        Neue Streak
-      </h3>
-
-      <input
-        id="streakTitle"
-        placeholder="Titel"
-      >
-
-      <input
-        id="streakEmoji"
-        placeholder="Emoji"
-      >
-
-      <input
-        id="streakGoal"
-        type="number"
-        min="1"
-        value="10"
-        placeholder="Ziel"
-      >
-
-      <input
-        id="streakPoints"
-        type="number"
-        min="0"
-        value="1"
-        placeholder="Punkte pro Klick"
-      >
-
-      <input
-        id="streakBonus"
-        type="number"
-        min="0"
-        value="10"
-        placeholder="Bonus"
-      >
-
-      <button
-        class="save"
-        id="saveStreakButton"
-      >
-        Streak speichern
-      </button>
-
-      <button
-        class="minus"
         id="closeChildAdminButton"
+        class="minus"
       >
-        Schließen
+        ✕
       </button>
 
     </div>
+
+    <!-- LOOT -->
+
+    <details
+      class="admin-dropdown"
+      open
+    >
+
+      <summary>
+        Loot erstellen
+      </summary>
+
+      <div class="admin-grid">
+
+        <input
+          id="childLootAmount"
+          type="number"
+          placeholder="Loot Wert"
+          value="5"
+        >
+
+        <button
+          id="childLootButton"
+          class="plus"
+        >
+          Loot erstellen
+        </button>
+
+      </div>
+
+    </details>
+
+    <!-- STREAK -->
+
+    <details class="admin-dropdown">
+
+      <summary>
+        Streak erstellen
+      </summary>
+
+      <div class="admin-grid">
+
+        <input
+          id="streakTitle"
+          placeholder="Titel"
+        >
+
+        <input
+          id="streakEmoji"
+          placeholder="Emoji"
+        >
+
+        <input
+          id="streakGoal"
+          type="number"
+          placeholder="Ziel"
+          value="10"
+        >
+
+        <input
+          id="streakPoints"
+          type="number"
+          placeholder="Loot pro Klick"
+          value="1"
+        >
+
+        <input
+          id="streakBonus"
+          type="number"
+          placeholder="Bonus Loot"
+          value="10"
+        >
+
+        <button
+          id="saveStreakButton"
+          class="save"
+        >
+          Streak speichern
+        </button>
+
+      </div>
+
+    </details>
+
+    <!-- LIST -->
+
+    <details
+      class="admin-dropdown"
+      open
+    >
+
+      <summary>
+        Streaks verwalten
+      </summary>
+
+      <div id="childStreakList"></div>
+
+    </details>
 
   </div>
 
