@@ -1,5 +1,19 @@
 import { firstLootColumn } from "./config.js";
 
+export function safeNumber(value, fallback = 0) {
+  if (value === "" || value === null || value === undefined) {
+    return fallback;
+  }
+
+  const number = Number(value);
+
+  if (Number.isNaN(number)) {
+    return fallback;
+  }
+
+  return number;
+}
+
 export function col(n) {
   let s = "";
 
@@ -17,12 +31,12 @@ export function lootCell(row, index) {
 }
 
 export function countOpen(slots) {
-  return slots.filter(v => Number(v) > 0).length;
+  return slots.filter(v => safeNumber(v) > 0).length;
 }
 
 export function highestFilled(slots) {
   for (let i = slots.length - 1; i >= 0; i--) {
-    if (Number(slots[i]) > 0) {
+    if (safeNumber(slots[i]) > 0) {
       return i;
     }
   }
@@ -31,5 +45,5 @@ export function highestFilled(slots) {
 }
 
 export function nextFree(slots) {
-  return slots.findIndex(v => Number(v) <= 0);
+  return slots.findIndex(v => safeNumber(v) <= 0);
 }
