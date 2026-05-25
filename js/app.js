@@ -8,12 +8,11 @@ import {
 import {
   setupSheet,
   setupRewards,
-  setupStreaks
+  setupStreaks,
+  setupPurchases
 } from "./setup.js";
 
-import {
-  loadKids
-} from "./kids.js";
+import { loadKids } from "./kids.js";
 
 import {
   loadRewards,
@@ -21,25 +20,23 @@ import {
 } from "./rewards.js";
 
 import {
-  initAdminEvents,
-  renderRewardAdmin
-} from "./admin.js";
-
-import {
   loadStreaks,
   initChildAdminEvents
 } from "./streaks.js";
 
-async function loadPartial(
-  mountId,
-  path
-) {
+import {
+  loadPurchases,
+  renderPurchaseAdminList
+} from "./purchases.js";
 
-  const response =
-    await fetch(path);
+import {
+  initAdminEvents,
+  renderRewardAdmin
+} from "./admin.js";
 
-  const html =
-    await response.text();
+async function loadPartial(mountId, path) {
+  const response = await fetch(path);
+  const html = await response.text();
 
   const mount =
     document.getElementById(mountId);
@@ -52,15 +49,11 @@ async function loadPartial(
   }
 
   mount.innerHTML = html;
-
 }
 
 async function loadChildAdminPartial() {
-
   const response =
-    await fetch(
-      "partials/child-admin.html"
-    );
+    await fetch("partials/child-admin.html");
 
   const html =
     await response.text();
@@ -69,11 +62,9 @@ async function loadChildAdminPartial() {
     "beforeend",
     html
   );
-
 }
 
 async function loadPartials() {
-
   await loadPartial(
     "loginMount",
     "partials/login.html"
@@ -85,71 +76,42 @@ async function loadPartials() {
   );
 
   await loadChildAdminPartial();
-
 }
 
 function initLogin() {
-
   const loginButton =
-    document.getElementById(
-      "loginButton"
-    );
+    document.getElementById("loginButton");
 
   const guestButton =
-    document.getElementById(
-      "guestButton"
-    );
+    document.getElementById("guestButton");
 
   const logoutButton =
-    document.getElementById(
-      "logoutButton"
-    );
+    document.getElementById("logoutButton");
 
   if (
     !loginButton ||
     !guestButton ||
     !logoutButton
   ) {
-
-    console.error(
-      "Login Elemente fehlen"
-    );
-
+    console.error("Login Elemente fehlen");
     return;
   }
 
   const savedLogin =
-    localStorage.getItem(
-      "unlockedChild"
-    );
+    localStorage.getItem("unlockedChild");
 
   if (savedLogin) {
-
-    state.unlockedChild =
-      savedLogin;
+    state.unlockedChild = savedLogin;
 
     document
-      .getElementById(
-        "loginOverlay"
-      )
-      ?.classList.remove(
-        "visible"
-      );
+      .getElementById("loginOverlay")
+      ?.classList.remove("visible");
 
-    if (
-      savedLogin === "ADMIN"
-    ) {
-
+    if (savedLogin === "ADMIN") {
       document
-        .getElementById(
-          "adminPanel"
-        )
-        ?.classList.add(
-          "visible"
-        );
-
+        .getElementById("adminPanel")
+        ?.classList.add("visible");
     }
-
   }
 
   loginButton.addEventListener(
@@ -166,13 +128,10 @@ function initLogin() {
     "click",
     logout
   );
-
 }
 
 function guestLogin() {
-
-  state.unlockedChild =
-    "GAST";
+  state.unlockedChild = "GAST";
 
   localStorage.setItem(
     "unlockedChild",
@@ -180,30 +139,18 @@ function guestLogin() {
   );
 
   document
-    .getElementById(
-      "loginOverlay"
-    )
-    ?.classList.remove(
-      "visible"
-    );
+    .getElementById("loginOverlay")
+    ?.classList.remove("visible");
 
   loadAll();
-
 }
 
 function unlock() {
-
   const pin =
-    document.getElementById(
-      "pinInput"
-    )?.value;
+    document.getElementById("pinInput")?.value;
 
-  if (
-    pin === parentPin
-  ) {
-
-    state.unlockedChild =
-      "ADMIN";
+  if (pin === parentPin) {
+    state.unlockedChild = "ADMIN";
 
     localStorage.setItem(
       "unlockedChild",
@@ -211,47 +158,29 @@ function unlock() {
     );
 
     document
-      .getElementById(
-        "loginOverlay"
-      )
-      ?.classList.remove(
-        "visible"
-      );
+      .getElementById("loginOverlay")
+      ?.classList.remove("visible");
 
     document
-      .getElementById(
-        "adminPanel"
-      )
-      ?.classList.add(
-        "visible"
-      );
+      .getElementById("adminPanel")
+      ?.classList.add("visible");
 
     loadAll();
 
     return;
-
   }
 
   const child =
-    Object.keys(
-      kidsConfig
-    ).find(
-      key =>
-        kidsConfig[key].pin === pin
+    Object.keys(kidsConfig).find(
+      key => kidsConfig[key].pin === pin
     );
 
   if (!child) {
-
-    alert(
-      "Falsche PIN"
-    );
-
+    alert("Falsche PIN");
     return;
-
   }
 
-  state.unlockedChild =
-    child;
+  state.unlockedChild = child;
 
   localStorage.setItem(
     "unlockedChild",
@@ -259,84 +188,61 @@ function unlock() {
   );
 
   document
-    .getElementById(
-      "loginOverlay"
-    )
-    ?.classList.remove(
-      "visible"
-    );
+    .getElementById("loginOverlay")
+    ?.classList.remove("visible");
 
   loadAll();
-
 }
 
 function logout() {
-
   localStorage.removeItem(
     "unlockedChild"
   );
 
   location.reload();
-
 }
 
 async function loadAll() {
-
   try {
-
     await setupSheet();
-
     await setupRewards();
-
     await setupStreaks();
+    await setupPurchases();
 
+    await loadPurchases();
     await loadStreaks();
-
     await loadKids();
-
     await loadRewards();
 
     renderRewardAdmin();
+    renderPurchaseAdminList();
 
   } catch (error) {
-
     console.error(error);
 
     document
-      .getElementById(
-        "kidsContainer"
-      ).innerHTML = `
-
+      .getElementById("kidsContainer")
+      .innerHTML = `
         <div class="error">
           ${error.message}
         </div>
-
       `;
-
   }
-
 }
 
 async function start() {
-
   try {
-
     await loadPartials();
 
     initLogin();
-
     initAdminEvents();
-
     initChildAdminEvents();
 
     await loadAll();
 
     setInterval(() => {
-
       state.slideTick++;
-
       renderRewards();
-
     }, 3500);
 
     setInterval(
@@ -345,14 +251,11 @@ async function start() {
     );
 
   } catch (error) {
-
     console.error(
       "App Start Fehler:",
       error
     );
-
   }
-
 }
 
 start();
