@@ -1,138 +1,96 @@
 <div
-  id="adminPanel"
   class="admin-panel"
 >
 
+  <h2>
+    Admin Bereich
+  </h2>
+
   <!-- LOOT -->
-
-  <details
-    class="admin-dropdown"
-    open
-  >
-
-    <summary>
-      Loot vergeben
-    </summary>
-
-    <div class="admin-grid">
-
-      <div class="checkbox-group">
-
-        <label>
-          <input
-            type="checkbox"
-            name="lootChild"
-            value="Luna"
-          >
-          Luna
-        </label>
-
-        <label>
-          <input
-            type="checkbox"
-            name="lootChild"
-            value="Milo"
-          >
-          Milo
-        </label>
-
-        <label>
-          <input
-            type="checkbox"
-            name="lootChild"
-            value="Finn"
-          >
-          Finn
-        </label>
-
-      </div>
-
-      <input
-        id="lootAmount"
-        type="number"
-        placeholder="Loot Wert"
-        value="5"
-      >
-
-      <button
-        id="giveLootButton"
-        class="plus"
-      >
-        Loot vergeben
-      </button>
-
-      <div id="adminMessage"></div>
-
-    </div>
-
-  </details>
-
-  <!-- PURCHASES -->
-
-  <details
-    class="admin-dropdown"
-    open
-  >
-
-    <summary>
-      Gekaufte Belohnungen
-    </summary>
-
-    <div
-      id="purchaseAdminList"
-      class="admin-grid"
-    ></div>
-
-  </details>
-
-  <!-- REWARDS -->
 
   <details class="admin-dropdown">
 
     <summary>
-      Belohnung erstellen
+      🎁 Loot vergeben
     </summary>
 
     <div class="admin-grid">
 
-      <select id="rewardSelect">
+      <select id="adminLootChild">
 
-        <option value="">
-          Neue Belohnung
+        <option value="Luna">
+          Luna
+        </option>
+
+        <option value="Milo">
+          Milo
+        </option>
+
+        <option value="Finn">
+          Finn
         </option>
 
       </select>
 
       <input
-        id="rewardTitle"
-        placeholder="Titel"
-      >
-
-      <input
-        id="rewardTarget"
+        id="adminLootAmount"
         type="number"
-        placeholder="Zielpunkte"
+        min="1"
+        placeholder="Loot Punkte"
+      >
+
+      <button
+        id="adminLootButton"
+        class="plus"
+      >
+        ➕ Loot vergeben
+      </button>
+
+    </div>
+
+  </details>
+
+  <!-- REWARD -->
+
+  <details class="admin-dropdown">
+
+    <summary>
+      🏆 Reward erstellen
+    </summary>
+
+    <div class="admin-grid">
+
+      <input
+        id="rewardTitle"
+        placeholder="Reward Titel"
       >
 
       <input
-        id="rewardImg1"
+        id="rewardGoal"
+        type="number"
+        min="1"
+        placeholder="Benötigte Punkte"
+      >
+
+      <input
+        id="rewardImage1"
         placeholder="Bild URL 1"
       >
 
       <input
-        id="rewardImg2"
+        id="rewardImage2"
         placeholder="Bild URL 2"
       >
 
       <input
-        id="rewardImg3"
+        id="rewardImage3"
         placeholder="Bild URL 3"
       >
 
       <select id="rewardVisibleFor">
 
         <option value="ALL">
-          Alle Kinder
+          Für alle
         </option>
 
         <option value="Luna">
@@ -153,17 +111,97 @@
         id="saveRewardButton"
         class="save"
       >
-        Belohnung speichern
+        💾 Reward speichern
       </button>
+
+    </div>
+
+  </details>
+
+  <!-- STREAK -->
+
+  <details class="admin-dropdown">
+
+    <summary>
+      🔥 Streak erstellen
+    </summary>
+
+    <div class="admin-grid">
+
+      <select id="streakChild">
+
+        <option value="Luna">
+          Luna
+        </option>
+
+        <option value="Milo">
+          Milo
+        </option>
+
+        <option value="Finn">
+          Finn
+        </option>
+
+      </select>
+
+      <input
+        id="streakTitle"
+        placeholder="Streak Titel"
+      >
+
+      <input
+        id="streakEmoji"
+        placeholder="Emoji"
+      >
+
+      <input
+        id="streakGoal"
+        type="number"
+        min="1"
+        placeholder="Ziel"
+      >
+
+      <input
+        id="streakPoints"
+        type="number"
+        min="1"
+        placeholder="Loot pro Klick"
+      >
+
+      <input
+        id="streakBonus"
+        type="number"
+        min="1"
+        placeholder="Streak Bonus"
+      >
 
       <button
-        id="deactivateRewardButton"
-        class="minus"
+        id="saveStreakButton"
+        class="save"
       >
-        Belohnung deaktivieren
+        🔥 Streak speichern
       </button>
 
-      <div id="rewardAdminInfo"></div>
+    </div>
+
+  </details>
+
+  <!-- PURCHASES -->
+
+  <details class="admin-dropdown">
+
+    <summary>
+      🛒 Gekaufte Rewards
+    </summary>
+
+    <div
+      id="purchasesList"
+      class="admin-grid"
+    >
+
+      <div class="loading">
+        Lade Käufe...
+      </div>
 
     </div>
 
