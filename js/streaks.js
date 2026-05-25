@@ -10,7 +10,8 @@ import { state } from "./state.js";
 
 import {
   safeNumber,
-  lootCell
+  lootCell,
+  countOpen
 } from "./utils.js";
 
 async function refreshKids() {
@@ -20,10 +21,10 @@ async function refreshKids() {
 
 export async function loadStreaks() {
   const res = await api("getRange", {
-    range: `O${streaksStartRow}:W${streaksEndRow}`
+    range: `O${streaksStartRow}:X${streaksEndRow}`
   });
 
-  state.streaksData = res.values
+  state.streaksData = (res.values || [])
     .map((row, i) => ({
       row: streaksStartRow + i,
       id: row[0],
@@ -32,11 +33,12 @@ export async function loadStreaks() {
       emoji: row[3],
       current: safeNumber(row[4]),
       goal: safeNumber(row[5]),
-      pointsPerClick: safeNumber(row[6]),
-      bonus: safeNumber(row[7]),
+      lootPerClick: safeNumber(row[6]),
+      bonusLoot: safeNumber(row[7]),
       active:
         String(row[8]).toUpperCase() !== "FALSE" &&
-        !!row[2]
+        !!row[2],
+      completed: safeNumber(row[9])
     }))
     .filter(streak => streak.title);
 }
@@ -62,15 +64,15 @@ export function renderStreakDots(streak) {
 export function initChildAdminEvents() {
   document
     .getElementById("closeChildAdminButton")
-    .addEventListener("click", closeChildAdmin);
+    ?.addEventListener("click", closeChildAdmin);
 
   document
     .getElementById("childLootButton")
-    .addEventListener("click", addLootForSelectedChild);
+    ?.addEventListener("click", addLootForSelectedChild);
 
   document
     .getElementById("saveStreakButton")
-    .addEventListener("click", saveStreak);
+    ?.addEventListener("click", saveStreak);
 }
 
 export function openChildAdmin(child) {
@@ -123,8 +125,12 @@ function renderChildAdminStreaks() {
 
       <div class="info">
         ${streak.current} / ${streak.goal}
-        · +${streak.pointsPerClick} pro Klick
-        · Bonus ${streak.bonus}
+        · Loot ${streak.lootPerClick}
+        · Bonus ${streak.bonusLoot}
+      </div>
+
+      <div class="info">
+        Abgeschlossen: ${streak.completed}x
       </div>
 
       <button
@@ -140,24 +146,23 @@ function renderChildAdminStreaks() {
     .querySelectorAll("[data-streak-plus]")
     .forEach(button => {
       button.addEventListener("click", () => {
-        increaseStreak(Number(button.dataset.streakPlus));
+        increaseStreak(
+          Number(button.dataset.streakPlus)
+        );
       });
     });
 }
 
-async function addLootForSelectedChild() {
-  const child = state.selectedAdminChild;
-
-  const amount = safeNumber(
-    document.getElementById("childLootAmount").value
-  );
-
+async function addLootToChild(child, amount) {
   if (!child || amount <= 0) {
-    alert("Loot-Wert fehlt.");
-    return;
+    return true;
   }
 
-  const row = kidsConfig[child].row;
+  const row = kidsConfig[child]?.row;
+
+  if (!row) {
+    return false;
+  }
 
   const res = await api("getRange", {
     range: `D${row}:W${row}`
@@ -169,8 +174,7 @@ async function addLootForSelectedChild() {
   const free = slots.findIndex(value => value <= 0);
 
   if (free === -1) {
-    alert("Keine freien Loot-Slots.");
-    return;
+    return false;
   }
 
   slots[free] = amount;
@@ -183,10 +187,33 @@ async function addLootForSelectedChild() {
       },
       {
         cell: `C${row}`,
-        value: slots.filter(value => value > 0).length
+        value: countOpen(slots)
       }
     ]
   });
+
+  return true;
+}
+
+async function addLootForSelectedChild() {
+  const child = state.selectedAdminChild;
+
+  const amount = safeNumber(
+    document.getElementById("childLootAmount")?.value
+  );
+
+  if (!child || amount <= 0) {
+    alert("Loot-Wert fehlt.");
+    return;
+  }
+
+  const success =
+    await addLootToChild(child, amount);
+
+  if (!success) {
+    alert("Keine freien Loot-Slots.");
+    return;
+  }
 
   await refreshKids();
 
@@ -197,21 +224,21 @@ async function saveStreak() {
   const child = state.selectedAdminChild;
 
   const title =
-    document.getElementById("streakTitle").value.trim();
+    document.getElementById("streakTitle")?.value.trim() || "";
 
   const emoji =
-    document.getElementById("streakEmoji").value.trim();
+    document.getElementById("streakEmoji")?.value.trim() || "";
 
   const goal = safeNumber(
-    document.getElementById("streakGoal").value
+    document.getElementById("streakGoal")?.value
   );
 
-  const points = safeNumber(
-    document.getElementById("streakPoints").value
+  const loot = safeNumber(
+    document.getElementById("streakPoints")?.value
   );
 
   const bonus = safeNumber(
-    document.getElementById("streakBonus").value
+    document.getElementById("streakBonus")?.value
   );
 
   if (!child || !title || !emoji || goal <= 0) {
@@ -237,7 +264,7 @@ async function saveStreak() {
   }
 
   await api("setRange", {
-    range: `O${row}:W${row}`,
+    range: `O${row}:X${row}`,
     values: [[
       `S${Date.now()}`,
       child,
@@ -245,9 +272,10 @@ async function saveStreak() {
       emoji,
       0,
       goal,
-      points,
+      loot,
       bonus,
-      true
+      true,
+      0
     ]]
   });
 
@@ -267,32 +295,45 @@ async function increaseStreak(row) {
     return;
   }
 
-  const child = streak.child;
-  const kidRow = kidsConfig[child].row;
+  const clickLootOk =
+    await addLootToChild(
+      streak.child,
+      streak.lootPerClick
+    );
 
-  const freshKidPoints = await api("get", {
-    cell: `B${kidRow}`
-  });
-
-  const currentPoints = safeNumber(freshKidPoints.value);
+  if (!clickLootOk) {
+    alert("Keine freien Loot-Slots für diese Streak.");
+    return;
+  }
 
   let nextCurrent = streak.current + 1;
-  let pointsToAdd = streak.pointsPerClick;
+  let completed = streak.completed;
 
   if (nextCurrent >= streak.goal) {
-    pointsToAdd += streak.bonus;
+    const bonusOk =
+      await addLootToChild(
+        streak.child,
+        streak.bonusLoot
+      );
+
+    if (!bonusOk) {
+      alert("Streak voll, aber kein freier Loot-Slot für den Bonus.");
+      return;
+    }
+
     nextCurrent = 0;
+    completed++;
   }
 
   await api("setMany", {
     data: [
       {
-        cell: `B${kidRow}`,
-        value: currentPoints + pointsToAdd
-      },
-      {
         cell: `S${row}`,
         value: nextCurrent
+      },
+      {
+        cell: `X${row}`,
+        value: completed
       }
     ]
   });
