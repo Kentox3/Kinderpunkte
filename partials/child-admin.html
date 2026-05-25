@@ -1,0 +1,202 @@
+<!-- Child Admin Panel - Allows kids to manage their rewards and view stats -->
+<div class="child-admin-container">
+  <h2>👶 Mein Admin Panel</h2>
+  
+  <div class="child-admin-grid">
+    <!-- Stats Section -->
+    <div class="admin-section">
+      <h3>📊 Meine Statistiken</h3>
+      <div class="stats-box">
+        <div class="stat-item">
+          <span class="stat-label">Punkte:</span>
+          <span class="stat-value" id="childPoints">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Offene Belohnungen:</span>
+          <span class="stat-value" id="childUnclaimed">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Aktuelle Streak:</span>
+          <span class="stat-value" id="childStreak">0 🔥</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Beste Streak:</span>
+          <span class="stat-value" id="childBestStreak">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rewards Contribution Section -->
+    <div class="admin-section">
+      <h3>🎁 Meine Beiträge zu Belohnungen</h3>
+      <div class="contributions-list" id="childContributions">
+        <div class="loading">Laden...</div>
+      </div>
+    </div>
+
+    <!-- Activity Log Section -->
+    <div class="admin-section">
+      <h3>📝 Aktivitätsverlauf</h3>
+      <div class="activity-log" id="childActivityLog">
+        <div class="loading">Keine Aktivitäten vorhanden.</div>
+      </div>
+    </div>
+
+    <!-- Personal Goals Section -->
+    <div class="admin-section">
+      <h3>🎯 Meine Ziele</h3>
+      <div class="goals-list" id="childGoals">
+        <div class="loading">Keine Ziele gesetzt.</div>
+      </div>
+      <button id="addGoalBtn" class="plus">+ Ziel hinzufügen</button>
+    </div>
+
+    <!-- Achievements Section -->
+    <div class="admin-section">
+      <h3>🏆 Meine Erfolge</h3>
+      <div class="achievements-list" id="childAchievements">
+        <div class="loading">Noch keine Erfolge.</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="admin-section">
+      <h3>⚡ Schnellaktionen</h3>
+      <div class="quick-actions">
+        <button id="claimRewardBtn" class="open">Belohnung abholen</button>
+        <button id="viewAllRewardsBtn" class="open">Alle Belohnungen</button>
+        <button id="sharProgressBtn" class="open">Fortschritt teilen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .child-admin-container {
+    max-width: 950px;
+    margin: 20px auto;
+    padding: 20px;
+    color: white;
+  }
+
+  .child-admin-container h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2rem;
+  }
+
+  .child-admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .admin-section {
+    background: rgba(255, 255, 255, 0.13);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 18px;
+    padding: 20px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+  }
+
+  .admin-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 10px;
+  }
+
+  .stats-box {
+    display: grid;
+    gap: 12px;
+  }
+
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    border-radius: 10px;
+    border-left: 3px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .stat-label {
+    font-weight: bold;
+    opacity: 0.8;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffd86b;
+  }
+
+  .contributions-list,
+  .activity-log,
+  .goals-list,
+  .achievements-list {
+    display: grid;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .contribution-item,
+  .activity-item,
+  .goal-item,
+  .achievement-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    border-radius: 10px;
+    border-left: 3px solid rgba(255, 255, 255, 0.3);
+    font-size: 0.9rem;
+  }
+
+  .contribution-item strong,
+  .activity-item strong,
+  .goal-item strong,
+  .achievement-item strong {
+    display: block;
+    color: #ffd86b;
+    margin-bottom: 5px;
+  }
+
+  .quick-actions {
+    display: grid;
+    gap: 10px;
+  }
+
+  .quick-actions button {
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.2s;
+    color: white;
+    background: #3498db;
+  }
+
+  .quick-actions button:hover {
+    transform: scale(1.03);
+  }
+
+  .quick-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @media (max-width: 700px) {
+    .child-admin-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .child-admin-container h2 {
+      font-size: 1.5rem;
+    }
+  }
+</style>
