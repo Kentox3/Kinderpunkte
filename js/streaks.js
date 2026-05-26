@@ -85,7 +85,7 @@ export function openChildAdmin(child) {
 
   document
     .getElementById("childAdminOverlay")
-    .classList.add("visible");
+    ?.classList.add("visible");
 
   renderChildAdminStreaks();
 }
@@ -93,7 +93,7 @@ export function openChildAdmin(child) {
 export function closeChildAdmin() {
   document
     .getElementById("childAdminOverlay")
-    .classList.remove("visible");
+    ?.classList.remove("visible");
 
   state.selectedAdminChild = null;
 }
@@ -101,6 +101,10 @@ export function closeChildAdmin() {
 function renderChildAdminStreaks() {
   const box = document.getElementById("childStreakList");
   const child = state.selectedAdminChild;
+
+  if (!box || !child) {
+    return;
+  }
 
   const streaks = getStreaksForChild(child);
 
@@ -162,7 +166,9 @@ async function addLootToChild(child, amount) {
   }
 
   const slots = [...kid.slots];
-  const free = slots.findIndex(value => value <= 0);
+
+  const free =
+    slots.findIndex(value => value <= 0);
 
   if (free === -1) {
     return false;
@@ -185,6 +191,203 @@ async function addLootToChild(child, amount) {
   });
 
   return true;
+}
+
+async function addLootForSelectedChild() {
+  const child = state.selectedAdminChild;
+
+  const amount = safeNumber(
+    document.getElementById("childLootAmount")?.value
+  );
+
+  if (!child || amount <= 0) {
+    alert("Loot-Wert fehlt.");
+    return;
+  }
+
+  const success =
+    await addLootToChild(child, amount);
+
+  if (!success) {
+    alert("Keine freien Loot-Slots.");
+    return;
+  }
+
+  await loadKids();
+
+  alert(`${child}: +${amount} Loot erstellt.`);
+}
+
+async function saveStreak() {
+  const child = state.selectedAdminChild;
+
+  const title =
+    document.getElementById("streakTitle")?.value.trim() || "";
+
+  const emoji =
+    document.getElementById("streakEmoji")?.value.trim() || "";
+
+  const goal = safeNumber(
+    document.getElementById("streakGoal")?.value
+  );
+
+  const loot = safeNumber(
+    document.getElementById("streakPoints")?.value
+  );
+
+  const bonus = safeNumber(
+    document.getElementById("streakBonus")?.value
+  );
+
+  if (!child || !title || !emoji || goal <= 0) {
+    alert("Bitte Titel, Emoji und Ziel eintragen.");
+    return;
+  }
+
+  const usedRows =
+    state.streaksData.map(streak => streak.row);
+
+  let row = null;
+
+  for (let r = streaksStartRow; r <= streaksEndRow; r++) {
+    if (!usedRows.includes(r)) {
+      row = r;
+      break;
+    }
+  }
+
+  if (!row) {
+    alert("Keine freien Streak-Zeilen.");
+    return;
+  }
+
+  await api("setRange", {
+    sheet: SHEETS.streaks,
+    range: `A${row}:J${row}`,
+    values: [[
+      `S${Date.now()}`,
+      child,
+      title,
+      emoji,
+      0,
+      goal,
+      loot,
+      bonus,
+      true,
+      0
+    ]]
+  });
+
+  document.getElementById("streakTitle").value = "";
+  document.getElementById("streakEmoji").value = "";
+
+  await loadStreaks();
+
+  renderChildAdminStreaks();
+}
+
+async function increaseStreak(row) {
+  const streak =
+    state.streaksData.find(s => s.row === row);
+
+  if (!streak) {
+    return;
+  }
+
+  if (streak.current >= streak.goal) {
+    alert("Streak ist voll. Das Kind kann jetzt den Bonus abholen.");
+    return;
+  }
+
+  const clickLootOk =
+    await addLootToChild(
+      streak.child,
+      streak.lootPerClick
+    );
+
+  if (!clickLootOk) {
+    alert("Keine freien Loot-Slots für diese Streak.");
+    return;
+  }
+
+  const nextCurrent =
+    Math.min(streak.current + 1, streak.goal);
+
+  await api("setMany", {
+    sheet: SHEETS.streaks,
+    data: [
+      {
+        cell: `E${row}`,
+        value: nextCurrent
+      }
+    ]
+  });
+
+  await loadKids();
+  await loadStreaks();
+
+  renderChildAdminStreaks();
+}
+
+export async function claimStreakBonus(row) {
+  const streak =
+    state.streaksData.find(s => s.row === row);
+
+  if (!streak) {
+    return;
+  }
+
+  if (state.unlockedChild !== streak.child) {
+    alert("Du kannst nur deinen eigenen Streak-Bonus abholen.");
+    return;
+  }
+
+  if (streak.current < streak.goal) {
+    alert("Der Streak ist noch nicht voll.");
+    return;
+  }
+
+  const kid =
+    state.kidsData.find(k => k.name === streak.child);
+
+  if (!kid) {
+    return;
+  }
+
+  const newPoints =
+    kid.points + streak.bonusLoot;
+
+  const completed =
+    streak.completed + 1;
+
+  await api("setMany", {
+    sheet: SHEETS.kids,
+    data: [
+      {
+        cell: `B${kid.row}`,
+        value: newPoints
+      }
+    ]
+  });
+
+  await api("setMany", {
+    sheet: SHEETS.streaks,
+    data: [
+      {
+        cell: `E${row}`,
+        value: 0
+      },
+      {
+        cell: `J${row}`,
+        value: completed
+      }
+    ]
+  });
+
+  showStreakBonusOverlay(streak.bonusLoot);
+
+  await loadKids();
+  await loadStreaks();
 }
 
 function showStreakBonusOverlay(amount) {
