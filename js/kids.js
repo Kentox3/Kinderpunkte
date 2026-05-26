@@ -292,5 +292,5 @@ function showLootOverlay(reward) {
 
   setTimeout(() => {
     overlay.classList.remove("visible");
-  }, 2400);
+  }, 4800);
 }
