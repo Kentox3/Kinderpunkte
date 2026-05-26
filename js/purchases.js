@@ -28,7 +28,7 @@ export async function loadPurchases() {
       confirmedAt: row[6] || "",
       note: row[7] || ""
     }))
-    .filter(purchase => purchase.reward);
+    .filter(purchase => purchase.id);
 
   renderPurchases();
 }
@@ -38,26 +38,27 @@ export async function createPurchase({
   child,
   cost
 }) {
+  await loadPurchases();
 
   const usedRows =
-    state.purchasesData.map(p => p.row);
+    state.purchasesData.map(
+      purchase => purchase.row
+    );
 
-  let freeRow = null;
+  let row = null;
 
   for (
-    let row = purchasesStartRow;
-    row <= purchasesEndRow;
-    row++
+    let r = purchasesStartRow;
+    r <= purchasesEndRow;
+    r++
   ) {
-
-    if (!usedRows.includes(row)) {
-      freeRow = row;
+    if (!usedRows.includes(r)) {
+      row = r;
       break;
     }
-
   }
 
-  if (!freeRow) {
+  if (!row) {
     throw new Error("Keine freien Kauf-Zeilen.");
   }
 
@@ -66,7 +67,7 @@ export async function createPurchase({
 
   await api("setRange", {
     sheet: SHEETS.purchases,
-    range: `A${freeRow}:H${freeRow}`,
+    range: `A${row}:H${row}`,
     values: [[
       `P${Date.now()}`,
       child,
@@ -75,7 +76,9 @@ export async function createPurchase({
       "PENDING",
       now,
       "",
-      ""
+      reward.visibleFor === "ALL"
+        ? "Familienreward"
+        : "Privatreward"
     ]]
   });
 
@@ -90,19 +93,20 @@ export function renderPurchases() {
     return;
   }
 
-  if (!state.purchasesData.length) {
+  const purchases =
+    state.purchasesData || [];
 
+  if (!purchases.length) {
     container.innerHTML = `
       <div class="loading">
         Noch keine Käufe vorhanden.
       </div>
     `;
-
     return;
   }
 
   container.innerHTML =
-    state.purchasesData
+    purchases
       .slice()
       .reverse()
       .map(renderPurchaseCard)
@@ -112,12 +116,14 @@ export function renderPurchases() {
 }
 
 function renderPurchaseCard(purchase) {
-
   const pending =
     purchase.status === "PENDING";
 
   const confirmed =
     purchase.status === "CONFIRMED";
+
+  const cancelled =
+    purchase.status === "CANCELLED";
 
   return `
     <div class="card">
@@ -145,8 +151,12 @@ function renderPurchaseCard(purchase) {
       <div class="info">
         ${
           pending
-            ? "⏳ Wartet auf Belohnung"
-            : "✅ Übergeben"
+            ? "⏳ Wartet auf Übergabe"
+            : confirmed
+              ? "✅ Übergeben"
+              : cancelled
+                ? "❌ Storniert"
+                : purchase.status
         }
       </div>
 
@@ -170,19 +180,16 @@ function renderPurchaseCard(purchase) {
                 class="plus"
                 data-confirm-purchase="${purchase.row}"
               >
-                ✅ Bestätigen
+                ✅ Übergabe bestätigen
               </button>
 
-            </div>
-          `
-          : ""
-      }
+              <button
+                class="minus"
+                data-cancel-purchase="${purchase.row}"
+              >
+                ❌ Stornieren
+              </button>
 
-      ${
-        confirmed
-          ? `
-            <div class="purchase-notice">
-              🎉 Belohnung erhalten
             </div>
           `
           : ""
@@ -193,36 +200,28 @@ function renderPurchaseCard(purchase) {
 }
 
 function bindPurchaseButtons() {
-
   document
     .querySelectorAll("[data-confirm-purchase]")
     .forEach(button => {
-
       button.addEventListener("click", () => {
-
         confirmPurchase(
-          Number(
-            button.dataset.confirmPurchase
-          )
+          Number(button.dataset.confirmPurchase)
         );
-
       });
-
     });
 
+  document
+    .querySelectorAll("[data-cancel-purchase]")
+    .forEach(button => {
+      button.addEventListener("click", () => {
+        cancelPurchase(
+          Number(button.dataset.cancelPurchase)
+        );
+      });
+    });
 }
 
 async function confirmPurchase(row) {
-
-  const purchase =
-    state.purchasesData.find(
-      p => p.row === row
-    );
-
-  if (!purchase) {
-    return;
-  }
-
   const now =
     new Date().toLocaleString("de-DE");
 
@@ -243,25 +242,40 @@ async function confirmPurchase(row) {
   await loadPurchases();
 }
 
-export function renderPurchaseNoticeForChild(child) {
+async function cancelPurchase(row) {
+  await api("setMany", {
+    sheet: SHEETS.purchases,
+    data: [
+      {
+        cell: `E${row}`,
+        value: "CANCELLED"
+      }
+    ]
+  });
 
-  const pending =
-    state.purchasesData.filter(
+  await loadPurchases();
+}
+
+export function renderPurchaseNoticeForChild(child) {
+  const purchases =
+    (state.purchasesData || []).filter(
       purchase =>
-        purchase.child === child &&
+        purchase.child
+          .split(",")
+          .map(name => name.trim())
+          .includes(child) &&
         purchase.status === "PENDING"
     );
 
-  if (!pending.length) {
+  if (!purchases.length) {
     return "";
   }
 
-  return `
+  return purchases.map(purchase => `
     <div class="purchase-notice">
-
-      🎁 Deine Eltern geben dir bald
-      deine Belohnung.
-
+      🎁 <b>${purchase.reward}</b><br>
+      Bitte warte auf deine Belohnung.
+      Deine Eltern geben sie dir bald.
     </div>
-  `;
+  `).join("");
 }
