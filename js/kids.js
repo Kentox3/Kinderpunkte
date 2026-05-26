@@ -26,10 +26,15 @@ import {
   renderPurchaseNoticeForChild
 } from "./purchases.js";
 
+/* ========================================
+   LOAD KIDS FAST
+   Nur Name, Punkte, Unclaimed
+======================================== */
+
 export async function loadKids() {
   const res = await api("getRange", {
     sheet: SHEETS.kids,
-    range: "A2:W4"
+    range: "A2:C4"
   });
 
   state.kidsData = (res.values || [])
@@ -40,16 +45,12 @@ export async function loadKids() {
         return null;
       }
 
-      const slots = row
-        .slice(3, 3 + lootSlots)
-        .map(safeNumber);
-
       return {
         row: index + 2,
         name,
         points: safeNumber(row[1]),
-        unclaimed: countOpen(slots),
-        slots,
+        unclaimed: safeNumber(row[2]),
+        slots: null,
         className: kidsConfig[name]?.className || ""
       };
     })
@@ -57,6 +58,32 @@ export async function loadKids() {
 
   renderKids();
 }
+
+/* ========================================
+   LOAD LOOT SLOTS ON DEMAND
+======================================== */
+
+async function loadLootSlotsForKid(kid) {
+  const res = await api("getRange", {
+    sheet: SHEETS.kids,
+    range: `D${kid.row}:W${kid.row}`
+  });
+
+  const slots =
+    (res.values?.[0] || [])
+      .slice(0, lootSlots)
+      .map(safeNumber);
+
+  kid.slots = slots;
+
+  kid.unclaimed = countOpen(slots);
+
+  return slots;
+}
+
+/* ========================================
+   RENDER
+======================================== */
 
 export function renderKids() {
   const container =
@@ -212,6 +239,10 @@ function bindKidButtons() {
     });
 }
 
+/* ========================================
+   OPEN LOOT
+======================================== */
+
 async function openLoot(child) {
   if (state.unlockedChild !== child) {
     alert("Du kannst nur deine eigene Belohnung öffnen.");
@@ -225,28 +256,32 @@ async function openLoot(child) {
     return;
   }
 
+  const slots =
+    await loadLootSlotsForKid(kid);
+
   const reversedIndex =
-    [...kid.slots]
+    [...slots]
       .reverse()
       .findIndex(value => value > 0);
 
   if (reversedIndex === -1) {
+    await loadKids();
     return;
   }
 
   const realIndex =
-    kid.slots.length - 1 - reversedIndex;
+    slots.length - 1 - reversedIndex;
 
   const reward =
-    kid.slots[realIndex];
+    slots[realIndex];
 
   const newPoints =
     kid.points + reward;
 
-  const slots =
-    [...kid.slots];
+  const nextSlots =
+    [...slots];
 
-  slots[realIndex] = 0;
+  nextSlots[realIndex] = 0;
 
   await api("setMany", {
     sheet: SHEETS.kids,
@@ -257,7 +292,7 @@ async function openLoot(child) {
       },
       {
         cell: `C${kid.row}`,
-        value: countOpen(slots)
+        value: countOpen(nextSlots)
       },
       {
         cell: lootCell(kid.row, realIndex),
@@ -270,6 +305,10 @@ async function openLoot(child) {
 
   await loadKids();
 }
+
+/* ========================================
+   OVERLAY
+======================================== */
 
 function showLootOverlay(reward) {
   const overlay =
