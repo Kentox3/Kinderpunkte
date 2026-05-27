@@ -27,16 +27,25 @@ export async function loadRewards() {
       title: row[1],
       target: safeNumber(row[2]),
       images: [row[3], row[4], row[5]].filter(Boolean),
+
       active:
         String(row[6]).toUpperCase() !== "FALSE" &&
         !!row[1],
+
       visibleFor: row[7] || "ALL",
+
       Luna: safeNumber(row[8]),
       Milo: safeNumber(row[9]),
       Finn: safeNumber(row[10]),
-      LunaReady: String(row[11]).toUpperCase() === "TRUE",
-      MiloReady: String(row[12]).toUpperCase() === "TRUE",
-      FinnReady: String(row[13]).toUpperCase() === "TRUE"
+
+      LunaReady:
+        String(row[11]).toUpperCase() === "TRUE",
+
+      MiloReady:
+        String(row[12]).toUpperCase() === "TRUE",
+
+      FinnReady:
+        String(row[13]).toUpperCase() === "TRUE"
     }))
     .filter(reward => reward.title);
 
@@ -66,7 +75,11 @@ function isRealChild() {
 }
 
 function totalRewardPoints(reward) {
-  return reward.Luna + reward.Milo + reward.Finn;
+  return (
+    reward.Luna +
+    reward.Milo +
+    reward.Finn
+  );
 }
 
 function childContribution(reward, child) {
@@ -79,7 +92,8 @@ function childReady(reward, child) {
 
 function contributorChildren(reward) {
   return ["Luna", "Milo", "Finn"].filter(
-    child => childContribution(reward, child) > 0
+    child =>
+      childContribution(reward, child) > 0
   );
 }
 
@@ -282,11 +296,20 @@ function renderRewardButtons(reward) {
   `;
 }
 
+function getRewardInputValue(row) {
+  const existing =
+    document.getElementById(
+      `rewardAmount-${row}`
+    );
+
+  return existing?.value || 5;
+}
+
 function renderDonateButtons(reward) {
   return `
     <input
       type="number"
-      value="5"
+      value="${getRewardInputValue(reward.row)}"
       min="1"
       id="rewardAmount-${reward.row}"
     >
