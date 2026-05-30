@@ -215,7 +215,14 @@ async function start() {
     initLogin();
     initAdminEvents();
     initChildAdminEvents();
+await dbSet("test", {
+  status: "connected",
+  timestamp: Date.now()
+});
 
+console.log(
+  await dbGet("test")
+);
     await loadAll();
 
     setInterval(() => {
