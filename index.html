@@ -4,83 +4,72 @@
 <head>
 
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <title>Kinderpunkte</title>
 
-  <title>
-    Kinderpunkte
-  </title>
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
 
-  <link
-    rel="stylesheet"
-    href="css/style.css"
-  />
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#8b5dff" />
+
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kinderpunkte" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
 
 </head>
 
 <body>
 
   <!-- LOGIN -->
-
   <div id="loginMount"></div>
 
   <!-- MAIN -->
-
   <main>
 
     <!-- KIDS -->
-
     <div id="kidsContainer"></div>
 
     <!-- REWARDS -->
-
-    <h2>
-      🎁 Belohnungen
-    </h2>
-
+    <h2>🎁 Belohnungen</h2>
     <div id="rewardsContainer"></div>
 
     <!-- ADMIN -->
-
     <div id="adminMount"></div>
 
     <!-- LOGOUT -->
-
-    <button
-      id="logoutButton"
-      class="minus logout-bottom"
-    >
+    <button id="logoutButton" class="minus logout-bottom">
       🚪 Logout
     </button>
 
   </main>
 
   <!-- REWARD OVERLAY -->
-
-  <div
-    id="rewardOverlay"
-    class="reward-overlay"
-  >
-
+  <div id="rewardOverlay" class="reward-overlay">
     <div class="card">
-
-      <div id="rewardOverlayText">
-        🎁
-      </div>
-
+      <div id="rewardOverlayText">🎁</div>
     </div>
-
   </div>
 
   <!-- JS -->
+  <script type="module" src="js/app.js"></script>
 
-  <script
-    type="module"
-    src="js/app.js"
-  ></script>
+  <!-- Service Worker -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js")
+          .then(reg => console.log("SW registriert:", reg.scope))
+          .catch(err => console.error("SW Fehler:", err));
+      });
+    }
+  </script>
 
 </body>
 

@@ -1,0 +1,28 @@
+{
+  "name": "Kinderpunkte",
+  "short_name": "Kinderpunkte",
+  "description": "Punkte sammeln, Belohnungen freischalten!",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#8b5dff",
+  "theme_color": "#8b5dff",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
