@@ -1,0 +1,71 @@
+<div
+  id="childAdminOverlay"
+  class="child-admin-overlay"
+>
+
+  <div class="admin-panel visible">
+
+    <div class="top">
+
+      <div
+        id="childAdminTitle"
+        class="name"
+      >
+        Kind verwalten
+      </div>
+
+      <button
+        id="closeChildAdminButton"
+        class="minus"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <details
+      class="admin-dropdown"
+      open
+    >
+
+      <summary>
+        🎁 Loot erstellen
+      </summary>
+
+      <div class="admin-grid">
+
+        <input
+          id="childLootAmount"
+          type="number"
+          min="1"
+          placeholder="Loot Punkte"
+          value="5"
+        >
+
+        <button
+          id="childLootButton"
+          class="plus"
+        >
+          ➕ Loot erstellen
+        </button>
+
+      </div>
+
+    </details>
+
+    <details
+      class="admin-dropdown"
+      open
+    >
+
+      <summary>
+        🔥 Streaks verwalten
+      </summary>
+
+      <div id="childStreakList"></div>
+
+    </details>
+
+  </div>
+
+</div>
