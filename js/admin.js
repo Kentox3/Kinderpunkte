@@ -5,7 +5,6 @@ import { loadKids } from "./kids.js";
 import { loadRewards } from "./rewards.js";
 import { loadStreaks } from "./streaks.js";
 import { renderPurchases } from "./purchases.js";
-import { hardReload } from "./app.js";
 
 export function initAdminEvents() {
   document.getElementById("adminLootButton")
@@ -16,9 +15,6 @@ export function initAdminEvents() {
 
   document.getElementById("saveStreakButton")
     ?.addEventListener("click", saveAdminStreak);
-
-  document.getElementById("hardReloadButton")
-    ?.addEventListener("click", hardReload);
 
   document.getElementById("loadHistoryButton")
     ?.addEventListener("click", loadHistory);
