@@ -1,4 +1,4 @@
-const CACHE_NAME = "kinderpunkte-v1";
+const CACHE_NAME = "kinderpunkte-v2";
 
 const STATIC_ASSETS = [
   "./",

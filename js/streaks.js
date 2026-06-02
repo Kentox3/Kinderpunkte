@@ -1,6 +1,6 @@
 import { dbGet, dbSet, dbUpdate } from "./firebase.js";
 import { state } from "./state.js";
-import { safeNumber } from "./utils.js";
+import { safeNumber, showOverlay } from "./utils.js";
 import { loadKids } from "./kids.js";
 import { logHistory } from "./admin.js";
 
@@ -219,27 +219,13 @@ export async function claimStreakBonus(streakId) {
   await dbUpdate(`kids/${streak.child}`, { points: kid.points + streak.bonusLoot });
   await dbUpdate(`streaks/${streakId}`, { current: 0, completed: streak.completed + 1 });
   await logHistory(streak.child, streak.bonusLoot, `🔥 Streak Bonus: ${streak.emoji} ${streak.title}`);
-
-  showStreakBonusOverlay(streak.bonusLoot);
+  showOverlay({ text: `🔥 +${streak.bonusLoot} StreakBonus`, isStreak: true });
 
   await loadKids();
   await loadStreaks();
 }
 
-function showStreakBonusOverlay(amount) {
-  const overlay = document.getElementById("rewardOverlay");
-  const text = document.getElementById("rewardOverlayText");
-  if (!overlay || !text) return;
-
-  overlay.classList.add("streak-fire");
-  text.innerHTML = `🔥 +${amount} StreakBonus`;
-  overlay.classList.add("visible");
-
-  setTimeout(() => {
-    overlay.classList.remove("visible");
-    overlay.classList.remove("streak-fire");
-  }, 4800);
-}
+function showStreakBonusOverlay(amount) {} // nicht mehr genutzt
 
 /* ========================================
    STREAK EDIT OVERLAY

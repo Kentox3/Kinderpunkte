@@ -1,6 +1,6 @@
 import { dbGet, dbUpdate, dbSet } from "./firebase.js";
 import { state } from "./state.js";
-import { safeNumber } from "./utils.js";
+import { safeNumber, showOverlay } from "./utils.js";
 import { createPurchase } from "./purchases.js";
 import { loadKids } from "./kids.js";
 
@@ -376,31 +376,23 @@ async function completeRewardPurchase(reward, buyer) {
 ======================================== */
 
 function showRewardReachedOverlay(reward) {
-  showRewardOverlay(reward, "🎉 Geschafft!", "Die Belohnung ist erreicht!");
+  showOverlay({ text: `
+    <div class="big-reward-show">
+      ${(reward.images||[])[0] ? `<img src="${reward.images[0]}" class="big-reward-img">` : ""}
+      <div>🎉 Geschafft!</div>
+      <small>${reward.title}<br>Die Belohnung ist erreicht!</small>
+    </div>
+  ` });
 }
 
 function showRewardBoughtOverlay(reward) {
-  showRewardOverlay(reward, "🎁 Gekauft!", "Bitte warte auf deine Belohnung.");
-}
-
-function showRewardOverlay(reward, title, subtitle) {
-  const overlay = document.getElementById("rewardOverlay");
-  const text = document.getElementById("rewardOverlayText");
-  if (!overlay || !text) return;
-
-  const image = (reward.images || [])[0] || "";
-  overlay.classList.remove("streak-fire");
-
-  text.innerHTML = `
+  showOverlay({ text: `
     <div class="big-reward-show">
-      ${image ? `<img src="${image}" class="big-reward-img">` : ""}
-      <div>${title}</div>
-      <small>${reward.title}<br>${subtitle}</small>
+      ${(reward.images||[])[0] ? `<img src="${reward.images[0]}" class="big-reward-img">` : ""}
+      <div>🎁 Gekauft!</div>
+      <small>${reward.title}<br>Bitte warte auf deine Belohnung.</small>
     </div>
-  `;
-
-  overlay.classList.add("visible");
-  setTimeout(() => overlay.classList.remove("visible"), 5600);
+  ` });
 }
 
 function startRewardCooldown() {

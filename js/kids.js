@@ -4,6 +4,7 @@ import { kidsConfig, lootSlots, maxPoints } from "./config.js";
 import { getStreaksForChild, renderStreakDots, openChildAdmin, claimStreakBonus } from "./streaks.js";
 import { renderPurchaseNoticeForChild } from "./purchases.js";
 import { logHistory } from "./admin.js";
+import { showOverlay } from "./utils.js";
 
 /* ========================================
    LOAD
@@ -147,22 +148,7 @@ export async function openLoot(childName) {
   });
 
   await logHistory(childName, reward, "Loot geöffnet");
-  showLootOverlay(reward);
+  showOverlay({ text: `⭐ +${reward} Punkte` });
   await loadKids();
 }
 
-/* ========================================
-   OVERLAY
-======================================== */
-
-function showLootOverlay(reward) {
-  const overlay = document.getElementById("rewardOverlay");
-  const text = document.getElementById("rewardOverlayText");
-  if (!overlay || !text) return;
-
-  overlay.classList.remove("streak-fire");
-  text.innerHTML = `⭐ +${reward} Punkte`;
-  overlay.classList.add("visible");
-
-  setTimeout(() => overlay.classList.remove("visible"), 4800);
-}
