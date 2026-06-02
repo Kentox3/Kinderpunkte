@@ -50,26 +50,50 @@ async function giveAdminLoot() {
 
 async function saveReward() {
   const title = document.getElementById("rewardTitle")?.value.trim() || "";
-  const target = safeNumber(document.getElementById("rewardGoal")?.value);
   const img1 = document.getElementById("rewardImage1")?.value.trim() || "";
   const img2 = document.getElementById("rewardImage2")?.value.trim() || "";
   const img3 = document.getElementById("rewardImage3")?.value.trim() || "";
   const visibleFor = document.getElementById("rewardVisibleFor")?.value || "ALL";
 
-  if (!title || target <= 0) { alert("Bitte Reward-Titel und Punkte eintragen."); return; }
+  if (!title) { alert("Bitte Reward-Titel eintragen."); return; }
 
   const id = `R${Date.now()}`;
+  let rewardData;
 
-  await dbSet(`rewards/${id}`, {
-    id,
-    title,
-    target,
-    images: [img1, img2, img3].filter(Boolean),
-    active: true,
-    visibleFor,
-    contributions: { Luna: 0, Milo: 0, Finn: 0 },
-    ready: { Luna: false, Milo: false, Finn: false }
-  });
+  if (visibleFor === "ALL+") {
+    const targets = {
+      Luna: safeNumber(document.getElementById("rewardTargetLuna")?.value),
+      Milo: safeNumber(document.getElementById("rewardTargetMilo")?.value),
+      Finn: safeNumber(document.getElementById("rewardTargetFinn")?.value)
+    };
+    const activeKids = Object.entries(targets).filter(([, v]) => v > 0);
+    if (!activeKids.length) { alert("Bitte mindestens ein Kind-Ziel eintragen."); return; }
+
+    rewardData = {
+      id, title,
+      target: 0, // nicht genutzt bei ALL+
+      targets,   // { Luna: 500, Milo: 300, Finn: 0 }
+      images: [img1, img2, img3].filter(Boolean),
+      active: true,
+      visibleFor: "ALL+",
+      contributions: { Luna: 0, Milo: 0, Finn: 0 },
+      ready: { Luna: false, Milo: false, Finn: false }
+    };
+  } else {
+    const target = safeNumber(document.getElementById("rewardGoal")?.value);
+    if (target <= 0) { alert("Bitte Punkte-Ziel eintragen."); return; }
+
+    rewardData = {
+      id, title, target,
+      images: [img1, img2, img3].filter(Boolean),
+      active: true,
+      visibleFor,
+      contributions: { Luna: 0, Milo: 0, Finn: 0 },
+      ready: { Luna: false, Milo: false, Finn: false }
+    };
+  }
+
+  await dbSet(`rewards/${id}`, rewardData);
 
   clearRewardForm();
   await loadRewards();

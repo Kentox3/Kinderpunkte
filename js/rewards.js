@@ -33,6 +33,21 @@ function totalRewardPoints(reward) {
   return safeNumber(c.Luna) + safeNumber(c.Milo) + safeNumber(c.Finn);
 }
 
+// Kinder die bei ALL+ ein Ziel haben
+function activePlusKids(reward) {
+  const targets = reward.targets || {};
+  return ["Luna", "Milo", "Finn"].filter(k => safeNumber(targets[k]) > 0);
+}
+
+// Prüft ob bei ALL+ alle aktiven Kinder ihr Ziel erreicht haben
+function allPlusGoalsMet(reward) {
+  const kids = activePlusKids(reward);
+  if (!kids.length) return false;
+  const contributions = reward.contributions || {};
+  const targets = reward.targets || {};
+  return kids.every(k => safeNumber(contributions[k]) >= safeNumber(targets[k]));
+}
+
 function contributorChildren(reward) {
   return ["Luna", "Milo", "Finn"].filter(
     child => safeNumber((reward.contributions || {})[child]) > 0
@@ -67,17 +82,49 @@ export function renderRewards() {
 }
 
 function renderRewardCard(reward) {
+  const images = reward.images || [];
+  const image = images[state.slideTick % Math.max(images.length, 1)] || "";
+  const contributions = reward.contributions || {};
+  const readyMap = reward.ready || {};
+
+  if (reward.visibleFor === "ALL+") {
+    const kids = activePlusKids(reward);
+    const targets = reward.targets || {};
+    const allMet = allPlusGoalsMet(reward);
+
+    const bars = kids.map(k => {
+      const val = safeNumber(contributions[k]);
+      const tgt = safeNumber(targets[k]);
+      const pct = tgt > 0 ? Math.min(100, (val / tgt) * 100) : 0;
+      const met = val >= tgt;
+      return `
+        <div class="reward-small"><b>${k}</b> ${met ? "✅" : ""}</div>
+        <div class="bar-bg">
+          <div class="bar" style="width:${pct}%">${val}/${tgt}</div>
+        </div>
+      `;
+    }).join("");
+
+    return `
+      <div class="reward-card">
+        <img class="reward-img" src="${image}" onerror="this.style.display='none'">
+        <div>
+          <div class="reward-title">${allMet ? "🎉 " : ""}${reward.title}</div>
+          ${bars}
+          ${allMet ? `<div class="purchase-notice">🎉 Alle Ziele erreicht!</div>` : ""}
+          <div class="reward-controls">
+            ${renderRewardButtons(reward, 0, allMet)}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   const total = totalRewardPoints(reward);
   const percent = reward.target > 0
     ? Math.min(100, (total / reward.target) * 100)
     : 0;
   const ready = total >= reward.target;
-
-  const images = reward.images || [];
-  const image = images[state.slideTick % Math.max(images.length, 1)] || "";
-
-  const contributions = reward.contributions || {};
-  const readyMap = reward.ready || {};
 
   return `
     <div class="reward-card">
@@ -111,6 +158,25 @@ function renderRewardButtons(reward, total, ready) {
   const child = state.unlockedChild;
   const contributions = reward.contributions || {};
   const readyMap = reward.ready || {};
+
+  // ALL+ — jedes Kind spielt nur auf seinen eigenen Balken
+  if (reward.visibleFor === "ALL+") {
+    const targets = reward.targets || {};
+    const myTarget = safeNumber(targets[child]);
+    if (myTarget <= 0) return ""; // Kind ist nicht dabei
+
+    const myVal = safeNumber(contributions[child]);
+    const myMet = myVal >= myTarget;
+    const allMet = ready; // ready wird hier als allMet übergeben
+
+    if (allMet && myMet) {
+      return readyMap[child]
+        ? `<div class="purchase-notice">✅ Du hast bestätigt</div>`
+        : `<button class="save" data-ready-reward="${reward.id}">🎉 Kaufen bestätigen</button>`;
+    }
+    if (myMet) return `<div class="purchase-notice">✅ Dein Ziel erreicht! Warte auf die anderen.</div>`;
+    return renderDonateButtons(reward);
+  }
 
   if (reward.visibleFor === "ALL") {
     const contributed = safeNumber(contributions[child]) > 0;
@@ -237,6 +303,23 @@ async function confirmFamilyReward(rewardId) {
   if (!reward) return;
 
   const contributions = reward.contributions || {};
+
+  if (reward.visibleFor === "ALL+") {
+    const targets = reward.targets || {};
+    const myTarget = safeNumber(targets[child]);
+    const myVal = safeNumber(contributions[child]);
+    if (myVal < myTarget) { alert("Du hast dein Ziel noch nicht erreicht."); return; }
+
+    await dbUpdate(`rewards/${rewardId}/ready`, { [child]: true });
+    await loadRewards();
+
+    const updated = state.rewardsData[rewardId];
+    if (allPlusGoalsMet(updated) && activePlusKids(updated).every(k => (updated.ready || {})[k])) {
+      await completeRewardPurchase(updated, activePlusKids(updated).join(", "));
+    }
+    return;
+  }
+
   if (safeNumber(contributions[child]) <= 0) {
     alert("Du hast nichts beigesteuert.");
     return;

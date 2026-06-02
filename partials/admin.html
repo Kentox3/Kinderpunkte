@@ -87,10 +87,14 @@
         placeholder="Bild URL 3"
       >
 
-      <select id="rewardVisibleFor">
+      <select id="rewardVisibleFor" onchange="toggleAllPlusTargets(this.value)">
 
         <option value="ALL">
-          Für alle
+          Für alle (gemeinsames Ziel)
+        </option>
+
+        <option value="ALL+">
+          Für alle (individuelle Ziele)
         </option>
 
         <option value="Luna">
@@ -106,6 +110,13 @@
         </option>
 
       </select>
+
+      <div id="allPlusTargets" style="display:none; width:100%">
+        <div style="margin-bottom:4px; font-size:0.85em; opacity:0.7">Individuelles Ziel pro Kind (leer lassen = nicht dabei)</div>
+        <input id="rewardTargetLuna" type="number" min="1" placeholder="Luna — Ziel (optional)">
+        <input id="rewardTargetMilo" type="number" min="1" placeholder="Milo — Ziel (optional)">
+        <input id="rewardTargetFinn" type="number" min="1" placeholder="Finn — Ziel (optional)">
+      </div>
 
       <button
         id="saveRewardButton"

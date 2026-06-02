@@ -6,6 +6,20 @@ import { loadStreaks, initChildAdminEvents } from "./streaks.js";
 import { loadPurchases, renderPurchases } from "./purchases.js";
 import { initAdminEvents, renderRewardAdmin } from "./admin.js";
 
+// Global: wird von admin.html onchange gebraucht
+window.toggleAllPlusTargets = function(value) {
+  const box = document.getElementById("allPlusTargets");
+  const goalInput = document.getElementById("rewardGoal");
+  if (!box || !goalInput) return;
+  if (value === "ALL+") {
+    box.style.display = "block";
+    goalInput.style.display = "none";
+  } else {
+    box.style.display = "none";
+    goalInput.style.display = "";
+  }
+};
+
 /* ========================================
    PARTIALS
 ======================================== */
