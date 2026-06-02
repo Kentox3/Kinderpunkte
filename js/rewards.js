@@ -88,9 +88,12 @@ function renderRewardCard(reward) {
           <div class="bar" style="width:${percent}%">${total}/${reward.target}</div>
         </div>
         <div class="reward-small">
-          Luna: ${safeNumber(contributions.Luna)} ⭐ ${readyMap.Luna ? "✅" : ""}<br>
-          Milo: ${safeNumber(contributions.Milo)} ⭐ ${readyMap.Milo ? "✅" : ""}<br>
-          Finn: ${safeNumber(contributions.Finn)} ⭐ ${readyMap.Finn ? "✅" : ""}
+          ${reward.visibleFor === "ALL"
+            ? `Luna: ${safeNumber(contributions.Luna)} ⭐ ${readyMap.Luna ? "✅" : ""}<br>
+               Milo: ${safeNumber(contributions.Milo)} ⭐ ${readyMap.Milo ? "✅" : ""}<br>
+               Finn: ${safeNumber(contributions.Finn)} ⭐ ${readyMap.Finn ? "✅" : ""}`
+            : `${reward.visibleFor}: ${safeNumber(contributions[reward.visibleFor])} ⭐`
+          }
         </div>
         ${ready ? `<div class="purchase-notice">🎉 Ziel erreicht!</div>` : ""}
         <div class="reward-controls">
