@@ -68,6 +68,13 @@ export function renderRewards() {
   const container = document.getElementById("rewardsContainer");
   if (!container) return;
 
+  // Aktive Input-Werte merken bevor neu gerendert wird
+  const savedInputs = {};
+  container.querySelectorAll("input[id^='rewardAmount-']").forEach(el => {
+    savedInputs[el.id] = el.value;
+  });
+  const focusedId = document.activeElement?.id || "";
+
   const rewards = Object.values(state.rewardsData).filter(
     r => r.active && canSeeReward(r)
   );
@@ -79,6 +86,13 @@ export function renderRewards() {
 
   container.innerHTML = rewards.map(renderRewardCard).join("");
   bindRewardButtons();
+
+  // Gespeicherte Werte wiederherstellen
+  Object.entries(savedInputs).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  });
+  if (focusedId) document.getElementById(focusedId)?.focus();
 }
 
 function renderRewardCard(reward) {
@@ -114,6 +128,7 @@ function renderRewardCard(reward) {
           ${allMet ? `<div class="purchase-notice">🎉 Alle Ziele erreicht!</div>` : ""}
           <div class="reward-controls">
             ${renderRewardButtons(reward, 0, allMet)}
+            ${state.unlockedChild === "ADMIN" ? `<button class="save" data-edit-reward="${reward.id}" style="margin-top:6px">✏️ Bearbeiten</button>` : ""}
           </div>
         </div>
       </div>
@@ -145,6 +160,7 @@ function renderRewardCard(reward) {
         ${ready ? `<div class="purchase-notice">🎉 Ziel erreicht!</div>` : ""}
         <div class="reward-controls">
           ${renderRewardButtons(reward, total, ready)}
+          ${state.unlockedChild === "ADMIN" ? `<button class="save" data-edit-reward="${reward.id}" style="margin-top:6px">✏️ Bearbeiten</button>` : ""}
         </div>
       </div>
     </div>
@@ -217,6 +233,9 @@ function bindRewardButtons() {
   });
   document.querySelectorAll("[data-ready-reward]").forEach(btn => {
     btn.addEventListener("click", () => confirmFamilyReward(btn.dataset.readyReward));
+  });
+  document.querySelectorAll("[data-edit-reward]").forEach(btn => {
+    btn.addEventListener("click", () => openEditRewardOverlay(btn.dataset.editReward));
   });
 }
 
@@ -392,4 +411,116 @@ function startRewardCooldown() {
     state.rewardCooldown = false;
     document.querySelectorAll(sel).forEach(btn => btn.disabled = false);
   }, 1200);
+}
+
+/* ========================================
+   REWARD EDIT OVERLAY
+======================================== */
+
+function openEditRewardOverlay(rewardId) {
+  const reward = state.rewardsData[rewardId];
+  if (!reward) return;
+
+  // Overlay falls schon vorhanden entfernen
+  document.getElementById("rewardEditOverlay")?.remove();
+
+  const targets = reward.targets || {};
+  const isAllPlus = reward.visibleFor === "ALL+";
+
+  const overlay = document.createElement("div");
+  overlay.id = "rewardEditOverlay";
+  overlay.style.cssText = `
+    position:fixed; inset:0; background:rgba(0,0,0,0.7);
+    display:flex; align-items:center; justify-content:center;
+    z-index:9999; padding:16px;
+  `;
+
+  overlay.innerHTML = `
+    <div class="card" style="width:100%; max-width:420px; max-height:90vh; overflow-y:auto">
+      <h3 style="margin-bottom:12px">✏️ Reward bearbeiten</h3>
+
+      <div class="admin-grid">
+        <input id="editRewardTitle" placeholder="Titel" value="${reward.title}">
+
+        <select id="editRewardVisibleFor" onchange="handleEditTypeChange(this.value)">
+          <option value="ALL" ${reward.visibleFor === "ALL" ? "selected" : ""}>Für alle (gemeinsames Ziel)</option>
+          <option value="ALL+" ${reward.visibleFor === "ALL+" ? "selected" : ""}>Für alle (individuelle Ziele)</option>
+          <option value="Luna" ${reward.visibleFor === "Luna" ? "selected" : ""}>Nur Luna</option>
+          <option value="Milo" ${reward.visibleFor === "Milo" ? "selected" : ""}>Nur Milo</option>
+          <option value="Finn" ${reward.visibleFor === "Finn" ? "selected" : ""}>Nur Finn</option>
+        </select>
+
+        <div id="editGoalBox" style="display:${isAllPlus ? "none" : "block"}">
+          <input id="editRewardGoal" type="number" min="1" placeholder="Punkte-Ziel" value="${reward.target || ""}">
+        </div>
+
+        <div id="editAllPlusBox" style="display:${isAllPlus ? "block" : "none"}">
+          <div style="font-size:0.85em; opacity:0.7; margin-bottom:4px">Ziel pro Kind (leer = nicht dabei)</div>
+          <input id="editTargetLuna" type="number" min="1" placeholder="Luna — Ziel" value="${safeNumber(targets.Luna) || ""}">
+          <input id="editTargetMilo" type="number" min="1" placeholder="Milo — Ziel" value="${safeNumber(targets.Milo) || ""}">
+          <input id="editTargetFinn" type="number" min="1" placeholder="Finn — Ziel" value="${safeNumber(targets.Finn) || ""}">
+        </div>
+
+        <input id="editRewardImage1" placeholder="Bild URL 1" value="${(reward.images || [])[0] || ""}">
+        <input id="editRewardImage2" placeholder="Bild URL 2" value="${(reward.images || [])[1] || ""}">
+        <input id="editRewardImage3" placeholder="Bild URL 3" value="${(reward.images || [])[2] || ""}">
+
+        <button class="save" id="editRewardSaveBtn">💾 Speichern</button>
+        <button class="minus" id="editRewardDeactivateBtn">🚫 Reward deaktivieren</button>
+        <button id="editRewardCancelBtn" style="margin-top:4px">❌ Abbrechen</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  document.getElementById("editRewardSaveBtn").addEventListener("click", () => saveEditedReward(rewardId));
+  document.getElementById("editRewardDeactivateBtn").addEventListener("click", () => deactivateReward(rewardId));
+  document.getElementById("editRewardCancelBtn").addEventListener("click", () => overlay.remove());
+  overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+}
+
+window.handleEditTypeChange = function(value) {
+  document.getElementById("editGoalBox").style.display = value === "ALL+" ? "none" : "block";
+  document.getElementById("editAllPlusBox").style.display = value === "ALL+" ? "block" : "none";
+};
+
+async function saveEditedReward(rewardId) {
+  const title = document.getElementById("editRewardTitle")?.value.trim() || "";
+  const visibleFor = document.getElementById("editRewardVisibleFor")?.value || "ALL";
+
+  if (!title) { alert("Bitte Titel eintragen."); return; }
+
+  const updates = { title, visibleFor };
+
+  if (visibleFor === "ALL+") {
+    updates.targets = {
+      Luna: safeNumber(document.getElementById("editTargetLuna")?.value),
+      Milo: safeNumber(document.getElementById("editTargetMilo")?.value),
+      Finn: safeNumber(document.getElementById("editTargetFinn")?.value)
+    };
+    updates.target = 0;
+  } else {
+    const target = safeNumber(document.getElementById("editRewardGoal")?.value);
+    if (target <= 0) { alert("Bitte Punkte-Ziel eintragen."); return; }
+    updates.target = target;
+    updates.targets = { Luna: 0, Milo: 0, Finn: 0 };
+  }
+
+  updates.images = [
+    document.getElementById("editRewardImage1")?.value.trim() || "",
+    document.getElementById("editRewardImage2")?.value.trim() || "",
+    document.getElementById("editRewardImage3")?.value.trim() || ""
+  ].filter(Boolean);
+
+  await dbUpdate(`rewards/${rewardId}`, updates);
+  document.getElementById("rewardEditOverlay")?.remove();
+  await loadRewards();
+}
+
+async function deactivateReward(rewardId) {
+  if (!confirm("Reward wirklich deaktivieren? Er wird nicht mehr angezeigt.")) return;
+  await dbUpdate(`rewards/${rewardId}`, { active: false });
+  document.getElementById("rewardEditOverlay")?.remove();
+  await loadRewards();
 }

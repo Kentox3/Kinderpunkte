@@ -73,6 +73,9 @@ function initLogin() {
   guestButton.addEventListener("click", guestLogin);
   logoutButton.addEventListener("click", logout);
   pinInput?.addEventListener("keydown", e => { if (e.key === "Enter") unlock(); });
+
+  document.getElementById("hardReloadButtonUser")
+    ?.addEventListener("click", hardReload);
 }
 
 function guestLogin() {
@@ -166,3 +169,23 @@ async function start() {
 }
 
 start();
+
+/* ========================================
+   HARD RELOAD (global)
+======================================== */
+
+export async function hardReload() {
+  if (!confirm("Cache leeren und App neu laden?")) return;
+
+  if ("caches" in window) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => caches.delete(k)));
+  }
+
+  if ("serviceWorker" in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+  }
+
+  location.reload(true);
+}
