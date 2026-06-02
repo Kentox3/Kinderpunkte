@@ -6,6 +6,20 @@
     Admin Bereich
   </h2>
 
+  <!-- ÜBERSICHT -->
+
+  <details class="admin-dropdown" id="adminOverviewSection">
+
+    <summary>
+      📊 Übersicht
+    </summary>
+
+    <div id="adminOverview" class="admin-grid">
+      <div class="loading">Lade...</div>
+    </div>
+
+  </details>
+
   <!-- LOOT -->
 
   <details class="admin-dropdown">
@@ -17,19 +31,9 @@
     <div class="admin-grid">
 
       <select id="adminLootChild">
-
-        <option value="Luna">
-          Luna
-        </option>
-
-        <option value="Milo">
-          Milo
-        </option>
-
-        <option value="Finn">
-          Finn
-        </option>
-
+        <option value="Luna">Luna</option>
+        <option value="Milo">Milo</option>
+        <option value="Finn">Finn</option>
       </select>
 
       <input
@@ -39,10 +43,7 @@
         placeholder="Loot Punkte"
       >
 
-      <button
-        id="adminLootButton"
-        class="plus"
-      >
+      <button id="adminLootButton" class="plus">
         ➕ Loot vergeben
       </button>
 
@@ -60,10 +61,7 @@
 
     <div class="admin-grid">
 
-      <input
-        id="rewardTitle"
-        placeholder="Reward Titel"
-      >
+      <input id="rewardTitle" placeholder="Reward Titel">
 
       <input
         id="rewardGoal"
@@ -72,43 +70,16 @@
         placeholder="Benötigte Punkte"
       >
 
-      <input
-        id="rewardImage1"
-        placeholder="Bild URL 1"
-      >
-
-      <input
-        id="rewardImage2"
-        placeholder="Bild URL 2"
-      >
-
-      <input
-        id="rewardImage3"
-        placeholder="Bild URL 3"
-      >
+      <input id="rewardImage1" placeholder="Bild URL 1">
+      <input id="rewardImage2" placeholder="Bild URL 2">
+      <input id="rewardImage3" placeholder="Bild URL 3">
 
       <select id="rewardVisibleFor" onchange="toggleAllPlusTargets(this.value)">
-
-        <option value="ALL">
-          Für alle (gemeinsames Ziel)
-        </option>
-
-        <option value="ALL+">
-          Für alle (individuelle Ziele)
-        </option>
-
-        <option value="Luna">
-          Nur Luna
-        </option>
-
-        <option value="Milo">
-          Nur Milo
-        </option>
-
-        <option value="Finn">
-          Nur Finn
-        </option>
-
+        <option value="ALL">Für alle (gemeinsames Ziel)</option>
+        <option value="ALL+">Für alle (individuelle Ziele)</option>
+        <option value="Luna">Nur Luna</option>
+        <option value="Milo">Nur Milo</option>
+        <option value="Finn">Nur Finn</option>
       </select>
 
       <div id="allPlusTargets" style="display:none; width:100%">
@@ -118,13 +89,24 @@
         <input id="rewardTargetFinn" type="number" min="1" placeholder="Finn — Ziel (optional)">
       </div>
 
-      <button
-        id="saveRewardButton"
-        class="save"
-      >
+      <button id="saveRewardButton" class="save">
         💾 Reward speichern
       </button>
 
+    </div>
+
+  </details>
+
+  <!-- REWARD ARCHIV -->
+
+  <details class="admin-dropdown">
+
+    <summary>
+      🗂️ Reward-Archiv
+    </summary>
+
+    <div id="rewardArchiveList" class="admin-grid">
+      <div class="loading">Lade...</div>
     </div>
 
   </details>
@@ -140,59 +122,56 @@
     <div class="admin-grid">
 
       <select id="streakChild">
-
-        <option value="Luna">
-          Luna
-        </option>
-
-        <option value="Milo">
-          Milo
-        </option>
-
-        <option value="Finn">
-          Finn
-        </option>
-
+        <option value="Luna">Luna</option>
+        <option value="Milo">Milo</option>
+        <option value="Finn">Finn</option>
       </select>
 
-      <input
-        id="streakTitle"
-        placeholder="Streak Titel"
-      >
+      <input id="streakTitle" placeholder="Streak Titel">
+      <input id="streakEmoji" placeholder="Emoji">
+      <input id="streakGoal" type="number" min="1" placeholder="Ziel">
+      <input id="streakPoints" type="number" min="1" placeholder="Loot pro Klick">
+      <input id="streakBonus" type="number" min="1" placeholder="Streak Bonus">
 
-      <input
-        id="streakEmoji"
-        placeholder="Emoji"
-      >
-
-      <input
-        id="streakGoal"
-        type="number"
-        min="1"
-        placeholder="Ziel"
-      >
-
-      <input
-        id="streakPoints"
-        type="number"
-        min="1"
-        placeholder="Loot pro Klick"
-      >
-
-      <input
-        id="streakBonus"
-        type="number"
-        min="1"
-        placeholder="Streak Bonus"
-      >
-
-      <button
-        id="saveStreakButton"
-        class="save"
-      >
+      <button id="saveStreakButton" class="save">
         🔥 Streak speichern
       </button>
 
+    </div>
+
+  </details>
+
+  <!-- PUNKTE HISTORY -->
+
+  <details class="admin-dropdown">
+
+    <summary>
+      📜 Punkte-History
+    </summary>
+
+    <div class="admin-grid">
+      <select id="historyChild">
+        <option value="Luna">Luna</option>
+        <option value="Milo">Milo</option>
+        <option value="Finn">Finn</option>
+      </select>
+      <button id="loadHistoryButton" class="save">📜 History laden</button>
+      <div id="historyList"></div>
+    </div>
+
+  </details>
+
+  <!-- PUNKTE CHART -->
+
+  <details class="admin-dropdown">
+
+    <summary>
+      📈 Punkte-Verlauf
+    </summary>
+
+    <div class="admin-grid">
+      <canvas id="pointsChart" style="width:100%; max-height:220px"></canvas>
+      <div id="chartNoData" class="loading" style="display:none">Noch keine Verlaufsdaten vorhanden.</div>
     </div>
 
   </details>
@@ -224,15 +203,8 @@
       🛒 Gekaufte Rewards
     </summary>
 
-    <div
-      id="purchasesList"
-      class="admin-grid"
-    >
-
-      <div class="loading">
-        Lade Käufe...
-      </div>
-
+    <div id="purchasesList" class="admin-grid">
+      <div class="loading">Lade Käufe...</div>
     </div>
 
   </details>

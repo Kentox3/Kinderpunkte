@@ -3,6 +3,7 @@ import { state } from "./state.js";
 import { kidsConfig, lootSlots, maxPoints } from "./config.js";
 import { getStreaksForChild, renderStreakDots, openChildAdmin, claimStreakBonus } from "./streaks.js";
 import { renderPurchaseNoticeForChild } from "./purchases.js";
+import { logHistory } from "./admin.js";
 
 /* ========================================
    LOAD
@@ -145,6 +146,7 @@ export async function openLoot(childName) {
     slots
   });
 
+  await logHistory(childName, reward, "Loot geöffnet");
   showLootOverlay(reward);
   await loadKids();
 }

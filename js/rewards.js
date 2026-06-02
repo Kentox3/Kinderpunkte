@@ -21,6 +21,7 @@ export async function loadRewards() {
 function canSeeReward(reward) {
   if (state.unlockedChild === "ADMIN") return true;
   if (reward.visibleFor === "ALL") return true;
+  if (reward.visibleFor === "ALL+") return true;
   return reward.visibleFor === state.unlockedChild;
 }
 
