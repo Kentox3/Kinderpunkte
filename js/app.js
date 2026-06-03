@@ -14,10 +14,31 @@ window.toggleAllPlusTargets = function(value) {
   if (value === "ALL+") {
     box.style.display = "block";
     goalInput.style.display = "none";
+    // Checkboxen & Inputs zurücksetzen
+    ["Luna", "Milo", "Finn"].forEach(k => {
+      const cb = document.getElementById(`check${k}`);
+      const inp = document.getElementById(`rewardTarget${k}`);
+      if (cb) cb.checked = false;
+      if (inp) { inp.style.display = "none"; inp.value = ""; }
+    });
   } else {
     box.style.display = "none";
     goalInput.style.display = "";
   }
+};
+
+window.toggleAllPlusInput = function(child, checked) {
+  const inp = document.getElementById(`rewardTarget${child}`);
+  if (!inp) return;
+  inp.style.display = checked ? "block" : "none";
+  if (!checked) inp.value = "";
+};
+
+window.toggleEditAllPlusInput = function(child, checked) {
+  const inp = document.getElementById(`editTarget${child}`);
+  if (!inp) return;
+  inp.style.display = checked ? "block" : "none";
+  if (!checked) inp.value = "";
 };
 
 /* ========================================

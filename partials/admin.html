@@ -32,17 +32,29 @@
       <input id="rewardImage2" placeholder="Bild URL 2">
       <input id="rewardImage3" placeholder="Bild URL 3">
       <select id="rewardVisibleFor" onchange="toggleAllPlusTargets(this.value)">
-        <option value="ALL">Für alle (gemeinsames Ziel)</option>
-        <option value="ALL+">Für alle (individuelle Ziele)</option>
+        <option value="ALL">Gemeinsames Ziel (alle spenden)</option>
+        <option value="ALL+">Individuelle Ziele (Auswahl)</option>
         <option value="Luna">Nur Luna</option>
         <option value="Milo">Nur Milo</option>
         <option value="Finn">Nur Finn</option>
       </select>
       <div id="allPlusTargets" style="display:none; width:100%">
-        <div style="margin-bottom:4px; font-size:0.85em; opacity:0.7">Individuelles Ziel pro Kind (leer lassen = nicht dabei)</div>
-        <input id="rewardTargetLuna" type="number" min="1" placeholder="Luna — Ziel (optional)">
-        <input id="rewardTargetMilo" type="number" min="1" placeholder="Milo — Ziel (optional)">
-        <input id="rewardTargetFinn" type="number" min="1" placeholder="Finn — Ziel (optional)">
+        <div style="margin-bottom:8px; font-size:0.85em; opacity:0.7">Welche Kinder machen mit? Ziel eintragen = dabei, leer = nicht dabei</div>
+        <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px">
+          <input type="checkbox" id="checkLuna" onchange="toggleAllPlusInput('Luna', this.checked)">
+          <span>Luna</span>
+          <input id="rewardTargetLuna" type="number" min="1" placeholder="Ziel" style="display:none; flex:1">
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px">
+          <input type="checkbox" id="checkMilo" onchange="toggleAllPlusInput('Milo', this.checked)">
+          <span>Milo</span>
+          <input id="rewardTargetMilo" type="number" min="1" placeholder="Ziel" style="display:none; flex:1">
+        </label>
+        <label style="display:flex; align-items:center; gap:8px">
+          <input type="checkbox" id="checkFinn" onchange="toggleAllPlusInput('Finn', this.checked)">
+          <span>Finn</span>
+          <input id="rewardTargetFinn" type="number" min="1" placeholder="Ziel" style="display:none; flex:1">
+        </label>
       </div>
       <button id="saveRewardButton" class="save">💾 Reward speichern</button>
     </div>

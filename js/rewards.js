@@ -448,10 +448,17 @@ function openEditRewardOverlay(rewardId) {
         </div>
 
         <div id="editAllPlusBox" style="display:${isAllPlus ? "block" : "none"}">
-          <div style="font-size:0.85em; opacity:0.7; margin-bottom:4px">Ziel pro Kind (leer = nicht dabei)</div>
-          <input id="editTargetLuna" type="number" min="1" placeholder="Luna — Ziel" value="${safeNumber(targets.Luna) || ""}">
-          <input id="editTargetMilo" type="number" min="1" placeholder="Milo — Ziel" value="${safeNumber(targets.Milo) || ""}">
-          <input id="editTargetFinn" type="number" min="1" placeholder="Finn — Ziel" value="${safeNumber(targets.Finn) || ""}">
+          <div style="margin-bottom:8px; font-size:0.85em; opacity:0.7">Welche Kinder machen mit?</div>
+          ${["Luna", "Milo", "Finn"].map(k => {
+            const active = safeNumber(targets[k]) > 0;
+            return `
+              <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px">
+                <input type="checkbox" id="editCheck${k}" ${active ? "checked" : ""} onchange="toggleEditAllPlusInput('${k}', this.checked)">
+                <span>${k}</span>
+                <input id="editTarget${k}" type="number" min="1" placeholder="Ziel" value="${safeNumber(targets[k]) || ""}" style="display:${active ? "block" : "none"}; flex:1">
+              </label>
+            `;
+          }).join("")}
         </div>
 
         <input id="editRewardImage1" placeholder="Bild URL 1" value="${(reward.images || [])[0] || ""}">
@@ -492,6 +499,8 @@ async function saveEditedReward(rewardId) {
       Milo: safeNumber(document.getElementById("editTargetMilo")?.value),
       Finn: safeNumber(document.getElementById("editTargetFinn")?.value)
     };
+    const activeKids = Object.values(updates.targets).filter(v => v > 0);
+    if (!activeKids.length) { alert("Bitte mindestens ein Kind auswählen."); return; }
     updates.target = 0;
   } else {
     const target = safeNumber(document.getElementById("editRewardGoal")?.value);
